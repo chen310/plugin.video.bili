@@ -1,0 +1,136 @@
+msgid ""
+msgstr ""
+
+################################
+
+msgctxt "#30001"
+msgid "General Settings"
+msgstr "常规设置"
+
+msgctxt "#30002"
+msgid "Login"
+msgstr "登录"
+
+msgctxt "#30003"
+msgid "Cookie"
+msgstr "Cookie"
+
+msgctxt "#30004"
+msgid "Danmaku Settings"
+msgstr "弹幕设置"
+
+msgctxt "#30005"
+msgid "Enable Danmaku"
+msgstr "开启弹幕"
+
+msgctxt "#30010"
+msgid "Dash Settings"
+msgstr "Dash 设置"
+
+msgctxt "#30011"
+msgid "Enable Dash"
+msgstr "使用 Dash"
+
+msgctxt "#30012"
+msgid "Server Port"
+msgstr "服务器端口"
+
+msgctxt "#30020"
+msgid "Video Resolution"
+msgstr "视频分辨率"
+
+msgctxt "#30021"
+msgid "Video Resolution"
+msgstr "视频分辨率"
+
+msgctxt "#30022"
+msgid "8K Ultra HD"
+msgstr "8K 超高清"
+
+msgctxt "#30023"
+msgid "Dolby Vision"
+msgstr "杜比视界"
+
+msgctxt "#30024"
+msgid "HDR True Color"
+msgstr "HDR 真彩色"
+
+msgctxt "#30025"
+msgid "4K Ultra HD"
+msgstr "4K 超清"
+
+msgctxt "#30026"
+msgid "1080P60 High Frame Rate"
+msgstr "1080P60 高帧率"
+
+msgctxt "#30027"
+msgid "1080P+ High Bitrate"
+msgstr "1080P+ 高码率"
+
+msgctxt "#30028"
+msgid "1080P HD"
+msgstr "1080P 高清"
+
+msgctxt "#30029"
+msgid "720P60 High Frame Rate"
+msgstr "720P60 高帧率"
+
+msgctxt "#30030"
+msgid "720P HD"
+msgstr "720P 高清"
+
+msgctxt "#30031"
+msgid "480P"
+msgstr "480P 清晰"
+
+msgctxt "#30032"
+msgid "360P"
+msgstr "360P 流畅"
+
+msgctxt "#30033"
+msgid "240P"
+msgstr "240P 极速"
+
+msgctxt "#30035"
+msgid "Video Encoding"
+msgstr "视频编码"
+
+msgctxt "#30036"
+msgid "AV1"
+msgstr "AV1"
+
+msgctxt "#30037"
+msgid "HEVC"
+msgstr "HEVC"
+
+msgctxt "#30038"
+msgid "AVC"
+msgstr "AVC"
+
+msgctxt "#30040"
+msgid "Live Resolution"
+msgstr "直播清晰度"
+
+msgctxt "#30041"
+msgid "Live Resolution"
+msgstr "直播清晰度"
+
+msgctxt "#30042"
+msgid "Original "
+msgstr "原画"
+
+msgctxt "#30043"
+msgid "Bluray"
+msgstr "蓝光"
+
+msgctxt "#30044"
+msgid "Ultra HD"
+msgstr "超清"
+
+msgctxt "#30045"
+msgid "HD"
+msgstr "高清"
+
+msgctxt "#30046"
+msgid "Smooth"
+msgstr "流畅"

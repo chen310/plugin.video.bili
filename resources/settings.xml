@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<settings version="1">
+	<section id="plugin.video.bili">
+		<category id="general_setting" label="30001" help="">
+			<group id="1" label="30002">
+				<setting id="cookie" type="string" label="30003" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="edit" format="string">
+						<heading>30003</heading>
+					</control>
+				</setting>
+			</group>
+			<group id="2" label="30004">
+				<setting id="enable_danmaku" type="boolean" label="30005" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+			<group id="3" label="30010">
+				<setting id="enable_dash" type="boolean" label="30011" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="server_port" type="integer" label="30012" help="">
+					<level>0</level>
+					<default>54321</default>
+					<control type="edit" format="integer">
+						<heading>30012</heading>
+					</control>
+				</setting>		
+			</group>
+			<group id="4" label="30020">
+				<setting id="video_resolution" type="integer" label="30021" help="">
+					<level>0</level>
+					<default>116</default>
+					<constraints>
+						<options>
+							<option label="30022">127</option>
+							<option label="30023">126</option>
+							<option label="30024">125</option>
+							<option label="30025">120</option>
+							<option label="30026">116</option>
+							<option label="30027">112</option>
+							<option label="30028">80</option>
+							<option label="30029">74</option>
+							<option label="30030">64</option>
+							<option label="30031">32</option>
+							<option label="30032">16</option>
+							<option label="30033">6</option>
+						</options>
+					</constraints>
+					<control type="list" format="string">
+						<heading>30021</heading>
+					</control>
+				</setting>
+				<setting id="video_encoding" type="integer" label="30035" help="">
+					<level>0</level>
+					<default>7</default>
+					<constraints>
+						<options>
+							<option label="30036">13</option>
+							<option label="30037">12</option>
+							<option label="30038">7</option>
+						</options>
+					</constraints>
+					<control type="list" format="string">
+						<heading>30035</heading>
+					</control>
+					<dependencies>
+                        <dependency type="enable">
+                            <condition operator="is" setting="enable_dash">true</condition>
+                        </dependency>
+                    </dependencies>
+				</setting>
+			</group>
+			<group id="5" label="30040">
+				<setting id="live_resolution" type="integer" label="30041" help="">
+					<level>0</level>
+					<default>10000</default>
+					<constraints>
+						<options>
+							<option label="30042">10000</option>
+							<option label="30043">400</option>
+							<option label="30044">250</option>
+							<option label="30045">150</option>
+							<option label="30046">80</option>
+						</options>
+					</constraints>
+					<control type="list" format="string">
+						<heading>30041</heading>
+					</control>
+				</setting>
+			</group>
+		</category>
+	</section>
+</settings>

@@ -1,0 +1,136 @@
+msgid ""
+msgstr ""
+
+################################
+
+msgctxt "#30001"
+msgid "General Settings"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Login"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Cookie"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Danmaku Settings"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Enable Danmaku"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Dash Settings"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Enable Dash"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Server Port"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Video Resolution"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Video Resolution"
+msgstr ""
+
+msgctxt "#30022"
+msgid "8K Ultra HD"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Dolby Vision"
+msgstr ""
+
+msgctxt "#30024"
+msgid "HDR True Color"
+msgstr ""
+
+msgctxt "#30025"
+msgid "4K Ultra HD"
+msgstr ""
+
+msgctxt "#30026"
+msgid "1080P60 High Frame Rate"
+msgstr ""
+
+msgctxt "#30027"
+msgid "1080P+ High Bitrate"
+msgstr ""
+
+msgctxt "#30028"
+msgid "1080P HD"
+msgstr ""
+
+msgctxt "#30029"
+msgid "720P60 High Frame Rate"
+msgstr ""
+
+msgctxt "#30030"
+msgid "720P"
+msgstr ""
+
+msgctxt "#30031"
+msgid "480P"
+msgstr ""
+
+msgctxt "#30032"
+msgid "360P"
+msgstr ""
+
+msgctxt "#30033"
+msgid "240P"
+msgstr ""
+
+msgctxt "#30035"
+msgid "Video Encoding"
+msgstr ""
+
+msgctxt "#30036"
+msgid "AV1"
+msgstr ""
+
+msgctxt "#30037"
+msgid "HEVC"
+msgstr ""
+
+msgctxt "#30038"
+msgid "AVC"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Live Resolution"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Live Resolution"
+msgstr ""
+
+msgctxt "#30042"
+msgid "Original "
+msgstr ""
+
+msgctxt "#30043"
+msgid "Bluray"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Ultra HD"
+msgstr ""
+
+msgctxt "#30045"
+msgid "HD"
+msgstr ""
+
+msgctxt "#30046"
+msgid "Smooth"
+msgstr ""
