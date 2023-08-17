@@ -98,5 +98,74 @@
 				</setting>
 			</group>
 		</category>
+		<category id="function_setting" label="30100" help="">
+			<group id="1">
+				<setting id="function.home" type="boolean" label="30101" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.dynamic_list" type="boolean" label="30102" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.ranking_list" type="boolean" label="30103" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.live_areas" type="boolean" label="30104" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.followingLive" type="boolean" label="30105" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.my" type="boolean" label="30106" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.web_dynamic" type="boolean" label="30107" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.followings" type="boolean" label="30108" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.followers" type="boolean" label="30109" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.watchlater" type="boolean" label="30110" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.history" type="boolean" label="30111" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.space_videos" type="boolean" label="30112" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.search_list" type="boolean" label="30113" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+		</category>
 	</section>
 </settings>

@@ -4,7 +4,7 @@ import os
 from urllib.parse import urlencode
 import requests
 import json
-from xbmcswift2 import Plugin, xbmc, xbmcplugin, xbmcvfs, xbmcgui
+from xbmcswift2 import Plugin, xbmc, xbmcplugin, xbmcvfs, xbmcgui, xbmcaddon
 from danmaku2ass import Danmaku2ASS
 
 try:
@@ -43,6 +43,9 @@ def notify_error(res):
     if 'message' in res:
         message = res['message']
     notify('提示', str(res['code']) + ': ' + message)
+
+def localize(id):
+    return xbmcaddon.Addon().getLocalizedString(id)
 
 
 def getSetting(name):
@@ -224,63 +227,76 @@ def apiGet(url, data={}):
         url += '?' + urlencode(data)
     return get(url)
 
-
 @plugin.route('/')
 def index():
-    return [
-        {
-            'label': '首页推荐',
+    items = []
+    if getSetting('function.home') == 'true':
+        items.append({
+            'label': localize(30101),
             'path': plugin.url_for('home', page=1),
-        },
-        {
-            'label': '视频分区',
+        })
+    if getSetting('function.dynamic_list') == 'true':
+        items.append({
+            'label': localize(30102),
             'path': plugin.url_for('dynamic_list'),
-        },
-        {
-            'label': '排行榜',
+        })
+    if getSetting('function.ranking_list') == 'true':
+        items.append({
+            'label': localize(30103),
             'path': plugin.url_for('ranking_list'),
-        },
-        {
-            'label': '直播分区',
+        })
+    if getSetting('function.live_areas') == 'true':
+        items.append({
+            'label': localize(30104),
             'path': plugin.url_for('live_areas', level=1, id=0),
-        },
-        {
-            'label': '我关注的直播',
+        })
+    if getSetting('function.followingLive') == 'true':
+        items.append({
+            'label': localize(30105),
             'path': plugin.url_for('followingLive', page=1),
-        },
-        {
-            'label': '我的收藏',
+        })
+    if getSetting('function.my') == 'true':
+        items.append({
+            'label': localize(30106),
             'path': plugin.url_for('my'),
-        },
-        {
-            'label': '动态',
+        })
+    if getSetting('function.web_dynamic') == 'true':
+        items.append({
+            'label': localize(30107),
             'path': plugin.url_for('web_dynamic', page=1, offset=0),
-        },
-        {
-            'label': '关注列表',
+        })
+    if getSetting('function.followings') == 'true':
+        items.append({
+            'label': localize(30108),
             'path': plugin.url_for('followings', id=get_uid(), page=1),
-        },
-        {
-            'label': '粉丝列表',
+        })
+    if getSetting('function.followers') == 'true':
+        items.append({
+            'label': localize(30109),
             'path': plugin.url_for('followers', id=get_uid(), page=1),
-        },
-        {
-            'label': '稍后再看',
+        })
+    if getSetting('function.watchlater') == 'true':
+        items.append({
+            'label': localize(30110),
             'path': plugin.url_for('watchlater', page=1),
-        },
-        {
-            'label': '历史记录',
+        })
+    if getSetting('function.history') == 'true':
+        items.append({
+            'label': localize(30111),
             'path': plugin.url_for('history', time=0),
-        },
-        {
-            'label': '投稿的视频',
+        })
+    if getSetting('function.space_videos') == 'true':
+        items.append({
+            'label': localize(30112),
             'path': plugin.url_for('space_videos', id=get_uid(), page=1),
-        },
-        {
-            'label': '搜索',
+        })
+    if getSetting('function.search_list') == 'true':
+        items.append({
+            'label': localize(30113),
             'path': plugin.url_for('search_list'),
-        }
-    ]
+        })
+    
+    return items
 
 
 @plugin.route('/space_videos/<id>/<page>/')

@@ -134,3 +134,59 @@ msgstr "高清"
 msgctxt "#30046"
 msgid "Smooth"
 msgstr "流畅"
+
+msgctxt "#30100"
+msgid "Function Settings"
+msgstr "功能设置"
+
+msgctxt "#30101"
+msgid "Homepage"
+msgstr "首页推荐"
+
+msgctxt "#30102"
+msgid "Video Categories"
+msgstr "视频分区"
+
+msgctxt "#30103"
+msgid "Rankings"
+msgstr "排行榜"
+
+msgctxt "#30104"
+msgid "Live Streaming Categories"
+msgstr "直播分区"
+
+msgctxt "#30105"
+msgid "Live Streams I Follow"
+msgstr "我关注的直播"
+
+msgctxt "#30106"
+msgid "My Collections"
+msgstr "我的收藏"
+
+msgctxt "#30107"
+msgid "Updates"
+msgstr "动态"
+
+msgctxt "#30108"
+msgid "Following List"
+msgstr "关注列表"
+
+msgctxt "#30109"
+msgid "Followers List"
+msgstr "粉丝列表"
+
+msgctxt "#30110"
+msgid "Watch Later"
+msgstr "稍后再看"
+
+msgctxt "#30111"
+msgid "History"
+msgstr "历史记录"
+
+msgctxt "#30112"
+msgid "Uploaded Videos"
+msgstr "投稿的视频"
+
+msgctxt "#30113"
+msgid "Search"
+msgstr "搜索"

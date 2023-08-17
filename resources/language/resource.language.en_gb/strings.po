@@ -134,3 +134,59 @@ msgstr ""
 msgctxt "#30046"
 msgid "Smooth"
 msgstr ""
+
+msgctxt "#30100"
+msgid "Function Settings"
+msgstr ""
+
+msgctxt "#30101"
+msgid "Homepage"
+msgstr ""
+
+msgctxt "#30102"
+msgid "Video Categories"
+msgstr ""
+
+msgctxt "#30103"
+msgid "Rankings"
+msgstr ""
+
+msgctxt "#30104"
+msgid "Live Streaming Categories"
+msgstr ""
+
+msgctxt "#30105"
+msgid "Live Streams I Follow"
+msgstr ""
+
+msgctxt "#30106"
+msgid "My Collections"
+msgstr ""
+
+msgctxt "#30107"
+msgid "Updates"
+msgstr ""
+
+msgctxt "#30108"
+msgid "Following List"
+msgstr ""
+
+msgctxt "#30109"
+msgid "Followers List"
+msgstr ""
+
+msgctxt "#30110"
+msgid "Watch Later"
+msgstr ""
+
+msgctxt "#30111"
+msgid "History"
+msgstr ""
+
+msgctxt "#30112"
+msgid "Uploaded Videos"
+msgstr ""
+
+msgctxt "#30113"
+msgid "Search"
+msgstr ""
