@@ -449,8 +449,18 @@ def index():
             'label': localize(30113),
             'path': plugin.url_for('search_list'),
         })
+    if getSetting('function.open_settings') == 'true':
+        items.append({
+            'label': localize(30116),
+            'path': plugin.url_for('open_settings'),
+        })
 
     return items
+
+
+@plugin.route('/open_settings/')
+def open_settings():
+    plugin.open_settings()
 
 
 @plugin.route('/popular_history/')

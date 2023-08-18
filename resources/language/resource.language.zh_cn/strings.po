@@ -222,3 +222,7 @@ msgstr "每周必看"
 msgctxt "#30115"
 msgid "Must-Watch"
 msgstr "入站必刷"
+
+msgctxt "#30116"
+msgid "Open Settings"
+msgstr "打开设置"

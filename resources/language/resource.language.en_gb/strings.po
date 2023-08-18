@@ -222,3 +222,7 @@ msgstr ""
 msgctxt "#30115"
 msgid "Must-Watch"
 msgstr ""
+
+msgctxt "#30116"
+msgid "Open Settings"
+msgstr ""
