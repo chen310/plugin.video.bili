@@ -190,3 +190,11 @@ msgstr "投稿的视频"
 msgctxt "#30113"
 msgid "Search"
 msgstr "搜索"
+
+msgctxt "#30114"
+msgid "Must-Watch Weekly"
+msgstr "每周必看"
+
+msgctxt "#30115"
+msgid "Must-Watch"
+msgstr "入站必刷"

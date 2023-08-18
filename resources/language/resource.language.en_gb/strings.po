@@ -190,3 +190,11 @@ msgstr ""
 msgctxt "#30113"
 msgid "Search"
 msgstr ""
+
+msgctxt "#30114"
+msgid "Must-Watch Weekly"
+msgstr ""
+
+msgctxt "#30115"
+msgid "Must-Watch"
+msgstr ""

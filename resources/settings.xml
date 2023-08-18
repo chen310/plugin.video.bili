@@ -165,6 +165,16 @@
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
+				<setting id="function.popular_weekly" type="boolean" label="30114" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.popular_history" type="boolean" label="30115" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
 			</group>
 		</category>
 	</section>

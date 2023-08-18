@@ -76,7 +76,7 @@ def choose_resolution(videos):
             if video['id'] == min_id:
                 filtered_videos.append(video)
 
-    
+
     final_videos = []
     max_codecid = 0
     for video in filtered_videos:
@@ -94,8 +94,8 @@ def choose_resolution(videos):
         min_codecid = videos[-1]['codecid']
         for video in videos:
             if video['codecid'] == min_codecid:
-                final_videos.append(video)           
-    
+                final_videos.append(video)
+
     return final_videos
 
 
@@ -139,7 +139,7 @@ def generate_mpd(dash):
             '\t\t\t\t<SegmentBase indexRange="', audio['SegmentBase']['indexRange'], '">\n',
             '\t\t\t\t\t<Initialization range="' + audio['SegmentBase']['Initialization'] + '"></Initialization>\n',
             '\t\t\t\t</SegmentBase>\n',
-            '\t\t\t</Representation>\n' 
+            '\t\t\t</Representation>\n'
         ])
     list.append('\t\t</AdaptationSet>\n')
 
@@ -172,7 +172,7 @@ def generate_ass(cid):
     Danmaku2ASS(xmlfile, 'autodetect' , assfile, 1920, 540)
     if xbmcvfs.exists(assfile):
         return assfile
-    
+
 
 def make_dirs(path):
     if not path.endswith('/'):
@@ -245,6 +245,16 @@ def index():
             'label': localize(30103),
             'path': plugin.url_for('ranking_list'),
         })
+    if getSetting('function.popular_weekly') == 'true':
+        items.append({
+            'label': localize(30114),
+            'path': plugin.url_for('popular_weekly'),
+        })
+    if getSetting('function.popular_history') == 'true':
+        items.append({
+            'label': localize(30115),
+            'path': plugin.url_for('popular_history'),
+        })
     if getSetting('function.live_areas') == 'true':
         items.append({
             'label': localize(30104),
@@ -295,9 +305,117 @@ def index():
             'label': localize(30113),
             'path': plugin.url_for('search_list'),
         })
-    
+
     return items
 
+
+@plugin.route('/popular_history/')
+def popular_history():
+    videos = []
+    res = apiGet('/x/web-interface/popular/precious')
+    if res['code'] != 0:
+        return videos
+    list = res['data']['list']
+    for item in list:
+        plot = tag(item['owner']['name'], 'pink') + '\n'
+        plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
+        plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
+        if 'achievement' in item and item['achievement']:
+            plot += tag(item['achievement'], 'orange') + '\n\n'
+        if item['desc']:
+            plot += '简介: ' + item['desc']
+        if item['videos'] == 1:
+            video = {
+                'label': item['owner']['name'] + ' - ' +  item['title'],
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
+                'is_playable': True,
+                'icon': item['pic'],
+                'thumbnail': item['pic'],
+                'info': {
+                    'mediatype': 'video',
+                    'title': item['title'],
+                    'duration': item['duration'],
+                    'plot': plot
+                },
+                'info_type': 'video'
+            }
+        elif item['videos'] > 1:
+            video = {
+                'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
+                'path': plugin.url_for('videopages', id=item['bvid']),
+                'icon': item['pic'],
+                'thumbnail': item['pic'],
+                'info': {
+                    'plot': plot
+                },
+                'info_type': 'video'
+            }
+        else:
+            continue
+        videos.append(video)
+    return videos
+
+
+@plugin.route('/popular_weekly/')
+def popular_weekly():
+    categories = []
+    res = apiGet('/x/web-interface/popular/series/list')
+    if res['code'] != 0:
+        return categories
+    list = res['data']['list']
+    for item in list:
+        categories.append({
+            'label': item['name'] + ' ' + item['subject'],
+            'path':plugin.url_for('weekly', number = item['number']),
+        })
+    return categories
+
+
+@plugin.route('/weekly/<number>/')
+def weekly(number):
+    videos = []
+    res = apiGet('/x/web-interface/popular/series/one', {'number': number})
+    if res['code'] != 0:
+        return videos
+    list = res['data']['list']
+    for item in list:
+        plot = tag(item['owner']['name'], 'pink') + '\n'
+        plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
+        plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
+        if 'rcmd_reason' in item and item['rcmd_reason']:
+            plot += '推荐理由：' + item['rcmd_reason'] + '\n\n'
+        if item['desc']:
+            plot += '简介: ' + item['desc']
+        if item['videos'] == 1:
+            video = {
+                'label': item['owner']['name'] + ' - ' +  item['title'],
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
+                'is_playable': True,
+                'icon': item['pic'],
+                'thumbnail': item['pic'],
+                'info': {
+                    'mediatype': 'video',
+                    'title': item['title'],
+                    'duration': item['duration'],
+                    'plot': plot
+                },
+                'info_type': 'video'
+            }
+        elif item['videos'] > 1:
+            video = {
+                'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
+                'path': plugin.url_for('videopages', id=item['bvid']),
+                'icon': item['pic'],
+                'thumbnail': item['pic'],
+                'info': {
+                    'plot': plot
+                },
+                'info_type': 'video'
+            }
+        else:
+            continue
+        videos.append(video)
+    return videos
 
 @plugin.route('/space_videos/<id>/<page>/')
 def space_videos(id, page):
@@ -324,7 +442,7 @@ def space_videos(id, page):
     for item in list:
         videos.append({
             'label': item['title'],
-            'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),                
+            'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
             'is_playable': True,
             'icon': item['pic'],
             'thumbnail': item['pic'],
@@ -490,7 +608,7 @@ def live_area(pid, id, page):
     for item in list:
         live = {
             'label': item['uname'] + ' - ' + item['title'],
-            'path': plugin.url_for('live', id=item['roomid']),                
+            'path': plugin.url_for('live', id=item['roomid']),
             'is_playable': True,
             'icon': item['cover'],
             'thumbnail': item['cover'],
@@ -557,7 +675,7 @@ def web_dynamic(page, offset):
             duration = parse_duration(item['duration_text'])
             video = {
                 'label': author + ' - ' + item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),                
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
                 'is_playable': True,
                 'icon': item['cover'],
                 'thumbnail': item['cover'],
@@ -577,7 +695,7 @@ def web_dynamic(page, offset):
                 label = tag('【未直播】', 'grey') + author + ' - ' + item['live_play_info']['title']
             video = {
                 'label': label,
-                'path': plugin.url_for('live', id=item["live_play_info"]["room_id"]),                
+                'path': plugin.url_for('live', id=item["live_play_info"]["room_id"]),
                 'is_playable': True,
                 'icon': item["live_play_info"]["cover"],
                 'thumbnail': item["live_play_info"]["cover"],
@@ -606,7 +724,7 @@ def fav_series(uid, type):
     res = apiGet('/x/space/bangumi/follow/list', {'vmid': uid, 'type': type})
     if res['code'] != 0:
         return videos
-    
+
     list = res['data']['list']
     for item in list:
         label = item['title']
@@ -616,7 +734,7 @@ def fav_series(uid, type):
             'label': label,
             'path': plugin.url_for('bangumi', type='season_id' ,id=item['season_id']),
             'icon': item['cover'],
-            'thumbnail': item['cover']       
+            'thumbnail': item['cover']
         }
         videos.append(video)
     return videos
@@ -637,7 +755,7 @@ def favlist_list(uid):
     for item in list:
         video = {
             'label': item['title'],
-            'path': plugin.url_for('favlist', id=item['id'], page=1)           
+            'path': plugin.url_for('favlist', id=item['id'], page=1)
         }
         videos.append(video)
     return videos
@@ -665,7 +783,7 @@ def favlist(id, page):
         if item['page'] == 1:
             video = {
                 'label': item['upper']['name'] + ' - ' + item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=item['ugc']['first_cid'], ispgc='false'),                
+                'path': plugin.url_for('video', id=item['bvid'], cid=item['ugc']['first_cid'], ispgc='false'),
                 'is_playable': True,
                 'icon': item['cover'],
                 'thumbnail': item['cover'],
@@ -684,7 +802,7 @@ def favlist(id, page):
                 'thumbnail': item['cover'],
                 'info_type': 'video',
             }
-        else: 
+        else:
             continue
         videos.append(video)
     if res['data']['has_more']:
@@ -693,7 +811,7 @@ def favlist(id, page):
             'path': plugin.url_for('favlist', id=id, page=int(page)+1)
         })
     return videos
-    
+
 
 
 @plugin.route('/home/<page>/')
@@ -733,7 +851,7 @@ def home(page):
                     'is_playable': True,
                     'icon': item['pic'],
                     'thumbnail': item['pic']
-                }           
+                }
             else:
                 label = item['owner']['name'] + ' - ' + item['title']
                 plot = tag(item['owner']['name'], 'pink') + '\n'
@@ -782,7 +900,7 @@ def dynamic(id, page):
     if res['code'] != 0:
         return videos
     list = res['data']['archives']
-    for item in list:        
+    for item in list:
         if 'redirect_url' in item and 'www.bilibili.com/bangumi/play' in item['redirect_url']:
             plot = tag(item['owner']['name'], 'pink') + '\n'
             plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
@@ -795,7 +913,7 @@ def dynamic(id, page):
             bangumi_id = bangumi_id[2:]
             video = {
                 'label': tag('【' + item['tname'] +  '】', 'pink') + item['title'],
-                'path': plugin.url_for('bangumi', type=type, id=bangumi_id),            
+                'path': plugin.url_for('bangumi', type=type, id=bangumi_id),
                 'icon': item['pic'],
                 'thumbnail': item['pic'],
                 'info': {
@@ -811,7 +929,7 @@ def dynamic(id, page):
             if item['videos'] == 1:
                 video = {
                     'label': item['owner']['name'] + ' - ' +  item['title'],
-                    'path': plugin.url_for('video', id=item['bvid'], cid=item['cid'], ispgc='false'),                
+                    'path': plugin.url_for('video', id=item['bvid'], cid=item['cid'], ispgc='false'),
                     'is_playable': True,
                     'icon': item['pic'],
                     'thumbnail': item['pic'],
@@ -826,7 +944,7 @@ def dynamic(id, page):
             elif item['videos'] > 1:
                 video = {
                     'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
-                    'path': plugin.url_for('videopages', id=item['bvid']),               
+                    'path': plugin.url_for('videopages', id=item['bvid']),
                     'icon': item['pic'],
                     'thumbnail': item['pic'],
                     'info': {
@@ -844,7 +962,7 @@ def dynamic(id, page):
             'path': plugin.url_for('dynamic', id=id, page=int(page) + 1)
         })
     return videos
-    
+
 
 
 @plugin.route('/ranking_list/')
@@ -852,7 +970,7 @@ def ranking_list():
     rankings = [['全站', 0], ['国创相关', 168], ['动画', 1], ['音乐', 3], ['舞蹈', 129], ['游戏', 4], ['知识', 36], ['科技', 188], ['运动', 234], ['汽车', 223], ['生活', 160], ['美食', 211], ['动物圈', 217], ['鬼畜', 119], ['时尚', 155], ['娱乐', 5], ['影视', 181]]
     return [{
         'label': r[0],
-        'path': plugin.url_for('ranking', id=r[1])  
+        'path': plugin.url_for('ranking', id=r[1])
     } for r in rankings]
 
 
@@ -871,7 +989,7 @@ def ranking(id):
         if item['videos'] == 1:
             video = {
                 'label': item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),                
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
                 'is_playable': True,
                 'icon': item['pic'],
                 'thumbnail': item['pic'],
@@ -889,6 +1007,9 @@ def ranking(id):
                 'path': plugin.url_for('videopages', id=item['bvid']),
                 'icon': item['pic'],
                 'thumbnail': item['pic'],
+                'info': {
+                    'plot': plot
+                },
                 'info_type': 'video'
             }
         else:
@@ -915,7 +1036,7 @@ def watchlater(page):
         if item['count'] == 1:
             video = {
                 'label': item['owner']['name'] +  ' - ' + item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),                
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
                 'is_playable': True,
                 'icon': item['pic'],
                 'thumbnail': item['pic'],
@@ -926,7 +1047,7 @@ def watchlater(page):
                     'plot': plot
                 },
                 'info_type': 'video'
-            }               
+            }
         elif item['count'] > 1:
             video = {
                 'label': parts_tag(item['count']) + item['owner']['name'] +  ' - ' + item['title'],
@@ -955,13 +1076,13 @@ def followingLive(page):
     list = res['data']['list']
     for live in list:
         if live['live_status'] == 1:
-            label = tag('【直播中】 ', 'red')            
+            label = tag('【直播中】 ', 'red')
         else:
             label = tag('【未开播】 ', 'grey')
         label += live['uname'] + ' - ' +  live['title']
         item = {
             'label': label,
-            'path': plugin.url_for('live', id=live['roomid']),                
+            'path': plugin.url_for('live', id=live['roomid']),
             'is_playable': True,
             'icon': live['face'],
             'thumbnail': live['face'],
@@ -978,7 +1099,7 @@ def followingLive(page):
             'path': plugin.url_for('followingLive', page=page + 1)
         })
     return items
-    
+
 
 @plugin.route('/history/<time>/')
 def history(time):
@@ -997,7 +1118,7 @@ def history(time):
         if item['videos'] == 1:
             video = {
                 'label': item['author_name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('video', id=item['history']['bvid'], cid=0, ispgc='false'),                
+                'path': plugin.url_for('video', id=item['history']['bvid'], cid=0, ispgc='false'),
                 'is_playable': True,
                 'icon': item['cover'],
                 'thumbnail': item['cover'],
@@ -1007,7 +1128,7 @@ def history(time):
                     'duration': item['duration']
                 },
                 'info_type': 'video'
-            }           
+            }
         elif item['videos'] > 1:
             video = {
                 'label': parts_tag(item['videos']) + item['author_name'] + ' - ' +  item['title'],
@@ -1019,13 +1140,13 @@ def history(time):
         else:
             if item['history']['business'] == 'live':
                 if item['live_status'] == 1:
-                    label = tag('【直播中】 ', 'red')                    
+                    label = tag('【直播中】 ', 'red')
                 else:
                     label = tag('【未开播】 ', 'grey')
                 label += item['author_name'] + ' - ' +  item['title']
                 video = {
                     'label': label,
-                    'path': plugin.url_for('live', id=item['kid']),                
+                    'path': plugin.url_for('live', id=item['kid']),
                     'is_playable': True,
                     'icon': item['cover'],
                     'thumbnail': item['cover'],
@@ -1110,7 +1231,7 @@ def bangumi(type, id):
             'info_type': 'video',
         }
         items.append(item)
-    return items      
+    return items
 
 
 @plugin.route('/videopages/<id>/')
@@ -1149,7 +1270,7 @@ def video(id, cid, ispgc):
         data = res['data']
         if res['code'] != 0:
             return
-        
+
         cid = data['pages'][0]['cid']
         if 'redirect_url' in data and 'bangumi/play/ep' in data['redirect_url']:
             ispgc = True
