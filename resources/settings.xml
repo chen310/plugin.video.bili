@@ -97,6 +97,13 @@
 					</control>
 				</setting>
 			</group>
+			<group id="6">
+				<setting id="report_history" type="boolean" label="30051" help="30052">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
 		</category>
 		<category id="function_setting" label="30100" help="">
 			<group id="1">

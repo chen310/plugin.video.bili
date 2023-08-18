@@ -135,6 +135,14 @@ msgctxt "#30046"
 msgid "Smooth"
 msgstr "流畅"
 
+msgctxt "#30051"
+msgid "Upload playback history"
+msgstr "上报播放记录"
+
+msgctxt "#30052"
+msgid "When enabled, you can see Kodi's playback history in the browsing history on Bilibili."
+msgstr "开启后，将能够在哔哩哔哩的历史记录中看到 Kodi 的播放记录"
+
 msgctxt "#30100"
 msgid "Function Settings"
 msgstr "功能设置"

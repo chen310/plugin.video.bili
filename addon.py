@@ -201,12 +201,29 @@ def get_cookie():
     return getSetting('cookie')
 
 
-def get_uid():
+def get_cookie_value(key):
     cookie = get_cookie()
-    if 'DedeUserID' in cookie:
-        return cookie.split('DedeUserID=')[1].split(';')[0]
-    return '0'
+    if key in cookie:
+        return cookie.split(key + '=')[1].split(';')[0]
+    return ''
 
+def get_uid():
+    return get_cookie_value('DedeUserID') or '0'
+
+
+def post(url, data):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
+        'Referer': 'https://www.bilibili.com',
+    }
+    cookie = get_cookie()
+    if cookie:
+        headers['Cookie'] = cookie
+    try:
+        res = requests.post(url, data=data, headers=headers).json()
+    except Exception as e:
+        res = {'code': -1}
+    return res
 
 @plugin.cached(TTL=1)
 def get(url):
@@ -1394,6 +1411,17 @@ def videopages(id):
         videos.append(video)
     return videos
 
+
+def report_history(bvid, cid):
+    data = {
+        'bvid': bvid,
+        'cid': cid,
+        'csrf': get_cookie_value('bili_jct')
+    }
+    res = post('https://api.bilibili.com/x/click-interface/web/heartbeat', data)
+    return res
+
+
 @plugin.route('/video/<id>/<cid>/<ispgc>/')
 def video(id, cid, ispgc):
     ispgc = ispgc == 'true'
@@ -1480,8 +1508,12 @@ def video(id, cid, ispgc):
             player = xbmc.Player()
             if player.isPlaying():
                 player.stop()
+            if video_url and (getSetting('report_history') == 'true'):
+                report_history(id, cid)
             plugin.set_resolved_url(video_url, ass)
             return
+    if video_url and (getSetting('report_history') == 'true'):
+        report_history(id, cid)
     plugin.set_resolved_url(video_url)
 
 
