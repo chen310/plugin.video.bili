@@ -4,6 +4,8 @@ import os
 from urllib.parse import urlencode
 import requests
 import json
+import qrcode
+import time
 from xbmcswift2 import Plugin, xbmc, xbmcplugin, xbmcvfs, xbmcgui, xbmcaddon
 from danmaku2ass import Danmaku2ASS
 
@@ -111,6 +113,105 @@ def parse_duration(duration_text):
     return duration
 
 
+@plugin.route('/check_login/')
+def check_login():
+    if not get_cookie():
+        xbmcgui.Dialog().ok('提示', '账号未登录')
+        return
+    res = apiGet('/x/web-interface/nav/stat')
+    if res['code'] == 0:
+        xbmcgui.Dialog().ok('提示', '登录成功')
+    elif res['code'] == -101:
+        xbmcgui.Dialog().ok('提示', '账号未登录')
+    else:
+        xbmcgui.Dialog().ok('提示', res.get('message', '未知错误'))
+
+
+@plugin.route('/logout/')
+def logout():
+    account = plugin.get_storage('account')
+    account['cookie'] = ''
+    plugin.clear_function_cache()
+    xbmcgui.Dialog().ok('提示', '退出成功')
+
+
+@plugin.route('/cookie_login/')
+def cookie_login():
+    keyboard = xbmc.Keyboard('', '请输入 Cookie')
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+        cookie = keyboard.getText().strip()
+        if not cookie:
+            return
+    else:
+        return
+    account = plugin.get_storage('account')
+    account['cookie'] = cookie
+    plugin.clear_function_cache()
+    xbmcgui.Dialog().ok('提示', 'Cookie 设置成功')
+
+
+@plugin.route('/qrcode_login/')
+def qrcode_login():
+    temp_path = get_temp_path()
+    temp_path = os.path.join(temp_path, 'login.png')
+    if not temp_path:
+        notify('提示', '无法创建文件夹')
+        return
+    try:
+        res = requests.get('https://passport.bilibili.com/x/passport-login/web/qrcode/generate').json()
+    except:
+        notify('提示', '二维码获取失败')
+        return
+    if res['code'] != 0:
+        notify_error(res)
+
+    login_path = res['data']['url']
+    key = res['data']['qrcode_key']
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=20
+    )
+    qr.add_data(login_path)
+    qr.make(fit=True)
+    img = qr.make_image()
+    img.save(temp_path)
+    xbmc.executebuiltin('ShowPicture(%s)' % temp_path)
+    polling_login_status(key)
+
+
+def polling_login_status(key):
+    session = requests.Session()
+    for i in range(50):
+        try:
+            response = session.get('https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=' + key)
+            check_result = response.json()
+        except:
+            time.sleep(3)
+            continue
+        if check_result['code'] != 0:
+            xbmc.executebuiltin('Action(Back)')
+            return
+        if check_result['data']['code'] == 0:
+            account = plugin.get_storage('account')
+            cookies = session.cookies
+            cookies = ' '.join([cookie.name + '=' + cookie.value + ';' for cookie in cookies])
+            xbmc.log('set-cookie: ' + cookies)
+            account['cookie'] = cookies
+            plugin.clear_function_cache()
+            xbmcgui.Dialog().ok('提示', '登录成功')
+            xbmc.executebuiltin('Action(Back)')
+            return
+        elif check_result['data']['code'] == 86038:
+            notify('提示', '二维码已失效')
+            xbmc.executebuiltin('Action(Back)')
+            return
+        time.sleep(3)
+    xbmc.executebuiltin('Action(Back)')
+
+
 def generate_mpd(dash):
     videos = choose_resolution(dash['video'])
     audios = dash['audio']
@@ -197,8 +298,18 @@ def make_dirs(path):
     return True
 
 
+def get_temp_path():
+    temppath = xbmc.translatePath('special://temp/plugin.video.bili/')
+    if not make_dirs(temppath):
+        return
+    return temppath
+
+
 def get_cookie():
-    return getSetting('cookie')
+    account = plugin.get_storage('account')
+    if 'cookie' in account:
+        return account['cookie']
+    return ''
 
 
 def get_cookie_value(key):

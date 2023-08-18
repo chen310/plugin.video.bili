@@ -3,14 +3,44 @@
 	<section id="plugin.video.bili">
 		<category id="general_setting" label="30001" help="">
 			<group id="1" label="30002">
-				<setting id="cookie" type="string" label="30003" help="">
+				<setting id="qrcode_login" type="string" label="30006" help="">
 					<level>0</level>
 					<default/>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
-					<control type="edit" format="string">
-						<heading>30003</heading>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://plugin.video.bili/qrcode_login/)</data>
+					</control>
+				</setting>
+				<setting id="cookie_login" type="string" label="30007" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://plugin.video.bili/cookie_login/)</data>
+					</control>
+				</setting>
+				<setting id="check_login" type="string" label="30008" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://plugin.video.bili/check_login/)</data>
+					</control>
+				</setting>
+				<setting id="logout" type="string" label="30009" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://plugin.video.bili/logout/)</data>
 					</control>
 				</setting>
 			</group>
