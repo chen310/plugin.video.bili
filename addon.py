@@ -52,6 +52,10 @@ def getSetting(name):
     return xbmcplugin.getSetting(int(sys.argv[1]), name)
 
 
+def clear_text(text):
+    return text.replace('<em class=\"keyword\">', '').replace('</em>', '')
+
+
 def choose_resolution(videos):
     videos = sorted(videos, key=lambda x: (x['id'], x['codecid']), reverse=True)
     current_id = int(getSetting('video_resolution'))
@@ -567,7 +571,138 @@ def user(id):
 
 @plugin.route('/search_list/')
 def search_list():
-    return []
+    return [
+        {
+            'label': '综合搜索',
+            'path': plugin.url_for('search', type='all', page=1)
+        },
+        {
+            'label': '视频搜索',
+            'path': plugin.url_for('search', type='video', page=1)
+        },
+        {
+            'label': '番剧搜索',
+            'path': plugin.url_for('search', type='media_bangumi', page=1)
+        },
+        {
+            'label': '影视搜索',
+            'path': plugin.url_for('search', type='media_ft', page=1)
+        },
+        {
+            'label': '用户搜索',
+            'path': plugin.url_for('search', type='bili_user', page=1)
+        },
+    ]
+
+
+def get_search_list(list):
+    videos = []
+    for item in list:
+        if item['type'] == 'video':
+            plot = 'UP: ' + item['author'] + '\tID: ' + str(item['mid']) + '\n\n'
+            plot += item['description']
+            video = {
+                'label': item['author'] + ' - ' + clear_text(item['title']),
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
+                'is_playable': True,
+                'icon': item['pic'],
+                'thumbnail': item['pic'],
+                'info': {
+                    'mediatype': 'video',
+                    'title': clear_text(item['title']),
+                    'duration': parse_duration(item['duration']),
+                    'plot': plot
+                },
+                'info_type': 'video',
+            }
+        elif item['type'] == 'media_bangumi' or item['type'] == 'media_ft':
+            if item['type'] == 'media_bangumi':
+                cv_type = '声优'
+            else:
+                cv_type = '出演'
+            plot = tag(clear_text(item['title']), 'pink') + ' ' + item['index_show'] + '\n\n'
+            plot += '地区: ' + item['areas'] + '\n'
+            plot += cv_type + ': ' + clear_text(item['cv']).replace('\n', '/') + '\n'
+            plot += item['staff'] + '\n'
+            plot += '\n'
+            plot += item['desc']
+            video = {
+                'label': tag('【' + item['season_type_name'] + '】', 'pink') + clear_text(item['title']),
+                'path': plugin.url_for('bangumi', type='season_id' ,id=item['season_id']),
+                'icon': item['cover'],
+                'thumbnail': item['cover'],
+                'info': {
+                    'plot': plot
+                }
+            }
+        elif item['type'] == 'bili_user':
+            plot = 'UP: ' + item['uname'] + '\tLV' + str(item['level']) + '\n'
+            plot += 'ID: ' + str(item['mid']) + '\n'
+            plot += '粉丝: ' + str(convert_number(item['fans'])) + '\n\n'
+            plot += '签名: ' + item['usign'] + '\n'
+            video = {
+                'label': tag('【用户】') + item['uname'],
+                'path': plugin.url_for('user', id=item['mid']),
+                'icon': item['upic'],
+                'thumbnail': item['upic'],
+                'info': {
+                    'plot': plot
+                }
+            }
+        else:
+            continue
+        videos.append(video)
+    return videos
+
+
+@plugin.route('/search/<type>/<page>/')
+def search(type, page):
+    videos = []
+    keyboard = xbmc.Keyboard('', '请输入搜索内容')
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+        keyword = keyboard.getText()
+    else:
+        return videos
+
+    if not keyword.strip():
+        return videos
+    return search_by_keyword(type, keyword, page)
+
+
+@plugin.route('/search_by_keyword/<type>/<keyword>/<page>/')
+def search_by_keyword(type, keyword, page):
+    videos = []
+    data = {
+        'page': page,
+        'page_size': 50,
+        'platform': 'pc',
+        'keyword': keyword,
+    }
+
+    if type == 'all':
+        url = '/x/web-interface/wbi/search/all/v2'
+    else:
+        url = '/x/web-interface/wbi/search/type'
+        data['search_type'] = type
+    res = apiGet(url, data)
+    if res['code'] != 0:
+        return videos
+    if 'result' not in res['data']:
+        return videos
+    list = res['data']['result']
+    if type == 'all':
+        for result in list:
+            if result['result_type'] in ['video', 'media_bangumi', 'media_ft', 'bili_user']:
+                videos.extend(get_search_list(result['data']))
+    else:
+        videos.extend(get_search_list(list))
+    if res['data']['page'] < res['data']['numPages']:
+        videos.append({
+            'label': tag('下一页', 'yellow'),
+            'path': plugin.url_for('search_by_keyword', type=type, keyword=keyword , page=int(page)+1)
+        })
+    return videos
 
 
 @plugin.route('/live_areas/<level>/<id>/')
