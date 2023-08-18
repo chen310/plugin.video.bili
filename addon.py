@@ -1097,43 +1097,45 @@ def home(page):
     }
     res = apiGet(url, data)
 
-    if (res['code'] == 0):
-        list = res['data']['item']
-        for item in list:
-            if not item['bvid']:
-                continue
-            if 'live.bilibili.com' in item['uri']:
-                if (item['room_info']['live_status'] == 1):
-                    label = tag('【直播中】', 'red') + item['owner']['name'] + ' - ' + item['title']
-                else:
-                    label = tag('【未直播】', 'grey') + item['owner']['name'] + ' - ' + item['title']
+    if res['code'] != 0:
+        return videos
 
-                video = {
-                    'label': label,
-                    'path': plugin.url_for('live', id=item['url'].split('/')[-1]),
-                    'is_playable': True,
-                    'icon': item['pic'],
-                    'thumbnail': item['pic']
-                }
+    list = res['data']['item']
+    for item in list:
+        if not item['bvid']:
+            continue
+        if 'live.bilibili.com' in item['uri']:
+            if (item['room_info']['live_status'] == 1):
+                label = tag('【直播中】', 'red') + item['owner']['name'] + ' - ' + item['title']
             else:
-                label = item['owner']['name'] + ' - ' + item['title']
-                plot = tag(item['owner']['name'], 'pink') + '\n'
-                plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['danmaku']) + '弹幕\n'
-                video = {
-                    'label': label,
-                    'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='true'),
-                    'is_playable': True,
-                    'icon': item['pic'],
-                    'thumbnail': item['pic'],
-                    'info': {
-                        'mediatype': 'video',
-                        'title': item['title'],
-                        'plot': plot,
-                        'duration': item['duration']
-                    },
-                    'info_type': 'video'
-                }
-            videos.append(video)
+                label = tag('【未直播】', 'grey') + item['owner']['name'] + ' - ' + item['title']
+
+            video = {
+                'label': label,
+                'path': plugin.url_for('live', id=item['url'].split('/')[-1]),
+                'is_playable': True,
+                'icon': item['pic'],
+                'thumbnail': item['pic']
+            }
+        else:
+            label = item['owner']['name'] + ' - ' + item['title']
+            plot = tag(item['owner']['name'], 'pink') + '\n'
+            plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['danmaku']) + '弹幕\n'
+            video = {
+                'label': label,
+                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='true'),
+                'is_playable': True,
+                'icon': item['pic'],
+                'thumbnail': item['pic'],
+                'info': {
+                    'mediatype': 'video',
+                    'title': item['title'],
+                    'plot': plot,
+                    'duration': item['duration']
+                },
+                'info_type': 'video'
+            }
+        videos.append(video)
     videos.append({
         'label': tag('下一页', 'yellow'),
         'path': plugin.url_for('home', page=page+1)
