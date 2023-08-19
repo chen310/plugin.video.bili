@@ -1396,7 +1396,7 @@ def history(time):
         'view_at': time,
         'ps': 20,
     }
-    res = cachedApiGet(url, data)
+    res = apiGet(url, data)
     if res['code'] != 0:
         notify_error(res)
         return videos
@@ -1417,9 +1417,12 @@ def history(time):
                 'info_type': 'video'
             }
         elif item['videos'] > 1:
+            label = parts_tag(item['videos']) + item['author_name'] + ' - ' +  item['title']
+            if 'show_title' in item and item['show_title']:
+                label += '\n' + tag(item['show_title'], 'grey')
             video = {
-                'label': parts_tag(item['videos']) + item['author_name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('videopages', id=item['history']['bvid']),
+                'label': label,
+                'path': plugin.url_for('videopages', id=item['history']['bvid'], cid=item['history']['cid']),
                 'icon': item['cover'],
                 'thumbnail': item['cover'],
                 'info_type': 'video'
@@ -1448,6 +1451,8 @@ def history(time):
                     label = tag('【' + item['badge'] + '】', 'pink') + item['title']
                 else:
                     label = item['title']
+                if 'show_title' in item and item['show_title']:
+                    label += '\n' + tag(item['show_title'], 'grey')
                 video = {
                     'label': label,
                     'path': plugin.url_for('bangumi', type='ep_id', id=item['history']['epid']),
@@ -1529,13 +1534,16 @@ def videopages(id):
     if res['code'] != 0:
         return videos
     for item in data['pages']:
-        cid = item['cid']
+        if 'first_frame' in item and item['first_frame']:
+            pic = item['first_frame']
+        else:
+            pic = data['pic']
         video = {
             'label': item['part'],
-            'path': plugin.url_for('video', id=data['bvid'], cid=cid, ispgc='false'),
+            'path': plugin.url_for('video', id=data['bvid'], cid=item['cid'], ispgc='false'),
             'is_playable': True,
-            'icon': data['pic'],
-            'thumbnail': data['pic'],
+            'icon': pic,
+            'thumbnail': pic,
             'info': {
                 'mediatype': 'video',
                 'title': item['part'],
