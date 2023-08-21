@@ -709,6 +709,10 @@ def user(id):
             'path': plugin.url_for('space_videos', id=id, page=1),
         },
         {
+            'label': '合集和列表',
+            'path': plugin.url_for('seasons_series', uid=id, page=1),
+        },
+        {
             'label': '关注列表',
             'path': plugin.url_for('followings', id=id, page=1),
         },
@@ -721,6 +725,100 @@ def user(id):
             'path': plugin.url_for('his_subscription', id=id),
         },
     ]
+
+
+
+@plugin.route('/seasons_series/<uid>/<page>/')
+def seasons_series(uid, page):
+    collections = []
+    ps = 20
+    data = {
+        'mid': uid,
+        'page_num': page,
+        'page_size': ps
+    }
+    res = cachedApiGet('/x/polymer/web-space/seasons_series_list', data)
+    if res['code'] != 0:
+        notify_error(res)
+        return collections
+    list = res['data']['items_lists']['seasons_list']
+    for item in list:
+        collections.append({
+            'label': item['meta']['name'],
+            'path': plugin.url_for('seasons_and_series_detail', uid=uid, id=item['meta']['season_id'], type='season', page=1),
+            'icon': item['meta']['cover'],
+            'thumbnail': item['meta']['cover']
+        })
+    list = res['data']['items_lists']['series_list']
+    for item in list:
+        collections.append({
+            'label': item['meta']['name'],
+            'path': plugin.url_for('seasons_and_series_detail', uid=uid, id=item['meta']['series_id'], type='series', page=1),
+            'icon': item['meta']['cover'],
+            'thumbnail': item['meta']['cover']
+        })
+    if res['data']['items_lists']['page']['page_num'] * res['data']['items_lists']['page']['page_size'] < res['data']['items_lists']['page']['total']:
+        collections.append({
+            'label': tag('下一页', 'yellow'),
+            'path': plugin.url_for('seasons_series', uid=uid, page=int(page)+1)
+        })
+    return collections
+
+
+@plugin.route('/seasons_and_series_detail/<uid>/<id>/<type>/<page>/')
+def seasons_and_series_detail(id, uid, type, page):
+    videos = []
+    ps = 100
+    if type == 'season':
+        url = '/x/polymer/space/seasons_archives_list'
+        data = {
+            'mid': uid,
+            'season_id': id,
+            'sort_reverse': False,
+            'page_size': ps,
+            'page_num': page
+        }
+    else:
+        url = '/x/series/archives'
+        data = {
+            'mid': uid,
+            'series_id': id,
+            'sort': 'desc',
+            'ps': ps,
+            'pn': page
+        }
+    res = cachedApiGet(url, data)
+    if res['code'] != 0:
+        return videos
+    list = res['data']['archives']
+    for item in list:
+        video = {
+            'label': item['title'],
+            'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
+            'is_playable': True,
+            'icon': item['pic'],
+            'thumbnail': item['pic'],
+            'info': {
+                'mediatype': 'video',
+                'title': item['title'],
+                'duration': item['duration']
+            },
+            'info_type': 'video',
+        }
+        videos.append(video)
+    if type == 'season':
+        if res['data']['page']['page_num'] * res['data']['page']['page_size'] < res['data']['page']['total']:
+            videos.append({
+                'label': tag('下一页', 'yellow'),
+                'path': plugin.url_for('seasons_and_series_detail', uid=uid, id=id, type=type, page=int(page)+1)
+            })
+    else:
+        if res['data']['page']['num'] * res['data']['page']['size'] < res['data']['page']['total']:
+            videos.append({
+                'label': tag('下一页', 'yellow'),
+                'path': plugin.url_for('seasons_and_series_detail', uid=uid, id=id, type=type, page=int(page)+1)
+            })
+    return videos
 
 
 @plugin.route('/his_subscription/<id>/')
