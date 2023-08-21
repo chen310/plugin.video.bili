@@ -715,7 +715,25 @@ def user(id):
         {
             'label': '粉丝列表',
             'path': plugin.url_for('followers', id=get_uid(), page=1),
-        }
+        },
+        {
+            'label': 'TA的订阅',
+            'path': plugin.url_for('his_subscription', id=id),
+        },
+    ]
+
+
+@plugin.route('/his_subscription/<id>/')
+def his_subscription(id):
+    return [
+        {
+            'label': '追番',
+            'path': plugin.url_for('fav_series', uid=id, type=1)
+        },
+        {
+            'label': '追剧',
+            'path': plugin.url_for('fav_series', uid=id, type=2)
+        },
     ]
 
 
