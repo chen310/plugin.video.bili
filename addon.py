@@ -6,8 +6,12 @@ import requests
 import json
 import qrcode
 import time
+import locale
+from datetime import datetime
 from xbmcswift2 import Plugin, xbmc, xbmcplugin, xbmcvfs, xbmcgui, xbmcaddon
 from danmaku2ass import Danmaku2ASS
+
+locale.setlocale(locale.LC_ALL, 'zh_CN.utf-8')
 
 try:
     xbmc.translatePath = xbmcvfs.translatePath
@@ -26,6 +30,8 @@ def parts_tag(p):
 
 
 def convert_number(num):
+    if isinstance(num, str):
+        return num
     if num < 9950:
         return str(num)
     if num < 99500000:
@@ -34,6 +40,11 @@ def convert_number(num):
     else:
         result = round(num / 100000000, 1)
         return str(result) + "亿"
+
+
+def timestamp_to_date(timestamp):
+    dt = datetime.fromtimestamp(timestamp)
+    return dt.strftime('%Y年%m月%d日 %H:%M:%S')
 
 
 def notify(title, msg, t=1500):
@@ -56,6 +67,170 @@ def getSetting(name):
 
 def clear_text(text):
     return text.replace('<em class=\"keyword\">', '').replace('</em>', '')
+
+
+def get_video_item(item):
+    if 'attr' in item and item['attr'] != 0:
+        return
+
+    if 'videos' in item and isinstance(item['videos'], int):
+        multi_key = 'videos'
+    elif 'page' in item and isinstance(item['page'], int):
+        multi_key = 'page'
+    elif 'count' in item and isinstance(item['count'], int):
+        multi_key = 'count'
+    else:
+        multi_key = ''
+
+    if 'upper' in item:
+        uname = item['upper']['name']
+    elif 'owner' in item:
+        uname = item['owner']['name']
+    elif 'author' in item:
+        uname = item['author']
+    else:
+        uname = ''
+    
+    if 'pic' in item:
+        pic = item['pic']
+    elif 'cover' in item:
+        pic = item['cover']
+    elif 'face' in item:
+        pic = item['face']
+    else:
+        pic = ''
+
+    if 'bvid' in item:
+        bvid = item['bvid']
+    elif 'history' in item and 'bvid' in item['history']:
+        bvid = item['history']['bvid']
+
+    if 'title' in item:
+        title = item['title']
+
+
+    if 'cid' in item:
+        cid = item['cid']
+    elif 'ugc' in item and 'first_cid' in item['ugc']:
+        cid = item['ugc']['first_cid']
+    else:
+        cid = 0
+    
+    if 'duration' in item:
+        if isinstance(item['duration'], int):
+            duration = item['duration']
+        else:
+            duration = parse_duration(item['duration'])
+    elif 'length' in item:
+        if isinstance(item['length'], int):
+            duration = item['length']
+        else:
+            duration = parse_duration(item['length'])
+    elif 'duration_text' in  item:
+        duration = parse_duration(item['duration_text'])
+    else:
+        duration = 0
+    
+    plot = parse_plot(item)
+    if (not multi_key) or item[multi_key] == 1:
+        video = {
+            'label': uname + ' - ' + title,
+            'path': plugin.url_for('video', id=item['bvid'], cid=cid, ispgc='false'),
+            'is_playable': True,
+            'icon': pic,
+            'thumbnail': pic,
+            'info': {
+                'mediatype': 'video',
+                'title': title,
+                'duration': duration,
+                'plot': plot
+            },
+            'info_type': 'video'
+        }
+    elif item[multi_key] > 1:
+        label = parts_tag(item[multi_key]) + uname + ' - ' + title
+        video = {
+            'label': label,
+            'path': plugin.url_for('videopages', id=bvid),
+            'icon': pic,
+            'thumbnail': pic,
+            'info': {
+                'plot': plot
+            }
+        }
+    else:
+        return
+    return video
+
+
+def parse_plot(item):
+    plot = ''
+    if 'upper' in item:
+        plot += 'UP: ' + item['upper']['name'] + '\tID: ' + str(item['upper']['mid']) + '\n'
+    elif 'owner' in item:
+        plot += 'UP: ' + item['owner']['name'] + '\tID: ' + str(item['owner']['mid']) + '\n'
+    elif 'author' in item:
+        plot += 'UP: ' + item['author']
+        if 'mid' in item:
+            plot +='\tID: ' + str(item['mid'])
+        plot += '\n'
+    
+    if 'bvid' in item:
+        plot += item['bvid'] + '\n'
+
+    if 'pubdate' in item:
+        plot += timestamp_to_date(item['pubdate']) + '\n'
+    
+    if 'copyright' in item and str(item['copyright']) == '1':
+        plot += '未经作者授权禁止转载\n'
+
+    state = ''
+    if 'stat' in item:
+        stat = item['stat']
+        if 'view' in stat:
+            state += convert_number(stat['view']) + '播放 · '
+        elif  'play' in stat:
+            state += convert_number(stat['play']) + '播放 · '
+        if 'like' in stat:
+            state += convert_number(stat['like']) + '点赞 · '
+        if 'coin' in stat:
+            state += convert_number(stat['coin']) + '投币 · '
+        if 'favorite' in stat:
+            state += convert_number(stat['favorite']) + '收藏 · '
+        if 'reply' in stat:
+            state += convert_number(stat['reply']) + '评论 · '
+        if 'danmaku' in stat:
+            state += convert_number(stat['danmaku']) + '弹幕 · '
+        if 'share' in stat:
+            state += convert_number(stat['share']) + '分享 · '
+    elif 'cnt_info' in item:
+        stat = item['cnt_info']
+        if 'play' in item:
+            state += convert_number(stat['play']) + '播放 · '
+        if 'collect' in stat:
+            state += convert_number(stat['collect']) + '收藏 · '
+        if 'danmaku' in stat:
+            state += convert_number(stat['danmaku']) + '弹幕 · '
+    else:
+        if 'play' in item and isinstance(item['play'], int):
+            state += convert_number(item['play']) + '播放 · '
+        if 'comment' in item and isinstance(item['comment'], int):
+            state += convert_number(item['comment']) + '评论 · '
+
+    if state:
+        plot += state[:-3] + '\n'
+    plot += '\n'
+    
+    if 'achievement' in item and item['achievement']:
+        plot += tag(item['achievement'], 'orange') + '\n\n'
+    if 'rcmd_reason' in item and isinstance(item['rcmd_reason'], str) and item['rcmd_reason']:
+        plot += '推荐理由：' + item['rcmd_reason'] + '\n\n'
+    if 'desc' in item and item['desc']:
+        plot += '简介: ' + item['desc']
+    elif 'description' in item and item['description']:
+        plot += '简介: ' + item['description']
+    
+    return plot
 
 
 def choose_resolution(videos):
@@ -471,42 +646,9 @@ def popular_history():
         return videos
     list = res['data']['list']
     for item in list:
-        plot = tag(item['owner']['name'], 'pink') + '\n'
-        plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
-        plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
-        if 'achievement' in item and item['achievement']:
-            plot += tag(item['achievement'], 'orange') + '\n\n'
-        if item['desc']:
-            plot += '简介: ' + item['desc']
-        if item['videos'] == 1:
-            video = {
-                'label': item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': item['duration'],
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        elif item['videos'] > 1:
-            video = {
-                'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('videopages', id=item['bvid']),
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        else:
-            continue
-        videos.append(video)
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
     return videos
 
 
@@ -533,42 +675,9 @@ def weekly(number):
         return videos
     list = res['data']['list']
     for item in list:
-        plot = tag(item['owner']['name'], 'pink') + '\n'
-        plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
-        plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
-        if 'rcmd_reason' in item and item['rcmd_reason']:
-            plot += '推荐理由：' + item['rcmd_reason'] + '\n\n'
-        if item['desc']:
-            plot += '简介: ' + item['desc']
-        if item['videos'] == 1:
-            video = {
-                'label': item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': item['duration'],
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        elif item['videos'] > 1:
-            video = {
-                'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('videopages', id=item['bvid']),
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        else:
-            continue
-        videos.append(video)
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
     return videos
 
 @plugin.route('/space_videos/<id>/<page>/')
@@ -594,19 +703,9 @@ def space_videos(id, page):
 
     list = res['data']['list']['vlist']
     for item in list:
-        videos.append({
-            'label': item['title'],
-            'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-            'is_playable': True,
-            'icon': item['pic'],
-            'thumbnail': item['pic'],
-            'info': {
-                'mediatype': 'video',
-                'title': item['title'],
-                'duration': parse_duration(item['length'])
-            },
-            'info_type': 'video',
-        })
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
     if int(page) * ps < res['data']['page']['count']:
         videos.append({
             'label': tag('下一页', 'yellow'),
@@ -865,8 +964,7 @@ def get_search_list(list):
     videos = []
     for item in list:
         if item['type'] == 'video':
-            plot = 'UP: ' + item['author'] + '\tID: ' + str(item['mid']) + '\n\n'
-            plot += item['description']
+            plot = parse_plot(item)
             video = {
                 'label': item['author'] + ' - ' + clear_text(item['title']),
                 'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
@@ -1071,22 +1169,12 @@ def web_dynamic(page, offset):
         if not major:
             continue
         author = d['modules']['module_author']['name']
+        mid = d['modules']['module_author']['mid']
         if 'archive' in major:
             item = major['archive']
-            duration = parse_duration(item['duration_text'])
-            video = {
-                'label': author + ' - ' + item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['cover'],
-                'thumbnail': item['cover'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': duration
-                },
-                'info_type': 'video',
-            }
+            item['author'] = author
+            item['mid'] = mid
+            video = get_video_item(item)
         elif 'live_rcmd' in major:
             content = major['live_rcmd']['content']
             item = json.loads(content)
@@ -1178,34 +1266,9 @@ def favlist(id, page):
         return videos
     list = res['data']['medias']
     for item in list:
-        # 跳过失效视频
-        if item['attr'] != 0:
-            continue
-        if item['page'] == 1:
-            video = {
-                'label': item['upper']['name'] + ' - ' + item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=item['ugc']['first_cid'], ispgc='false'),
-                'is_playable': True,
-                'icon': item['cover'],
-                'thumbnail': item['cover'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': item['duration']
-                },
-                'info_type': 'video',
-            }
-        elif item['page'] > 1:
-            video = {
-                'label': parts_tag(item['page']) + item['upper']['name'] + ' - ' + item['title'],
-                'path': plugin.url_for('videopages', id=item['bvid']),
-                'icon': item['cover'],
-                'thumbnail': item['cover'],
-                'info_type': 'video',
-            }
-        else:
-            continue
-        videos.append(video)
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
     if res['data']['has_more']:
         videos.append({
             'label': tag('下一页', 'yellow'),
@@ -1256,23 +1319,9 @@ def home(page):
                 'thumbnail': item['pic']
             }
         else:
-            label = item['owner']['name'] + ' - ' + item['title']
-            plot = tag(item['owner']['name'], 'pink') + '\n'
-            plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['danmaku']) + '弹幕\n'
-            video = {
-                'label': label,
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='true'),
-                'is_playable': True,
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'plot': plot,
-                    'duration': item['duration']
-                },
-                'info_type': 'video'
-            }
+            video = get_video_item(item)
+            if not video:
+                continue
         videos.append(video)
     videos.append({
         'label': tag('下一页', 'yellow'),
@@ -1304,10 +1353,8 @@ def dynamic(id, page):
         return videos
     list = res['data']['archives']
     for item in list:
-        if 'redirect_url' in item and 'www.bilibili.com/bangumi/play' in item['redirect_url']:
-            plot = tag(item['owner']['name'], 'pink') + '\n'
-            plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
-            plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
+        if 'redirect_url' in item and 'www.bilibili.com/bangumi/play' in item['redirect_url']:            
+            plot = parse_plot(item)
             bangumi_id = item['redirect_url'].split('/')[-1].split('?')[0]
             if bangumi_id.startswith('ep'):
                 type = 'ep_id'
@@ -1325,39 +1372,9 @@ def dynamic(id, page):
                 'info_type': 'video'
             }
         else:
-            plot = tag(item['owner']['name'], 'pink') + '\n'
-            plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
-            plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
-            plot += item['desc']
-            if item['videos'] == 1:
-                video = {
-                    'label': item['owner']['name'] + ' - ' +  item['title'],
-                    'path': plugin.url_for('video', id=item['bvid'], cid=item['cid'], ispgc='false'),
-                    'is_playable': True,
-                    'icon': item['pic'],
-                    'thumbnail': item['pic'],
-                    'info': {
-                        'mediatype': 'video',
-                        'title': item['title'],
-                        'duration': item['duration'],
-                        'plot': plot,
-                    },
-                    'info_type': 'video'
-                }
-            elif item['videos'] > 1:
-                video = {
-                    'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
-                    'path': plugin.url_for('videopages', id=item['bvid']),
-                    'icon': item['pic'],
-                    'thumbnail': item['pic'],
-                    'info': {
-                        'mediatype': 'video',
-                        'title': item['title'],
-                        'duration': item['duration'],
-                        'plot': plot,
-                    },
-                    'info_type': 'video'
-                }
+            video = get_video_item(item)
+            if not video:
+                continue
         videos.append(video)
     if int(page) * ps < res['data']['page']['count']:
         videos.append({
@@ -1385,39 +1402,9 @@ def ranking(id):
         return videos
     list = res['data']['list']
     for item in list:
-        plot = tag(item['owner']['name'], 'pink') + '\n'
-        plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
-        plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
-        plot += item['desc']
-        if item['videos'] == 1:
-            video = {
-                'label': item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': item['duration'],
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        elif item['videos'] > 1:
-            video = {
-                'label': parts_tag(item['videos']) + item['owner']['name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('videopages', id=item['bvid']),
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        else:
-            continue
-        videos.append(video)
+        video = get_video_item(item)
+        if item:
+            videos.append(video)
     return videos
 
 @plugin.route('/watchlater/<page>/')
@@ -1432,39 +1419,9 @@ def watchlater(page):
         return videos
     list = res['data']['list']
     for item in list:
-        plot = tag(item['owner']['name'], 'pink') + '\n'
-        plot += convert_number(item['stat']['like']) + '点赞 · ' + convert_number(item['stat']['coin']) + '投币 · ' + convert_number(item['stat']['favorite'])  +  '收藏\n'
-        plot += convert_number(item['stat']['view']) + '播放 · ' + convert_number(item['stat']['danmaku']) + '弹幕 · ' + convert_number(item['stat']['share']) + '分享\n\n'
-        plot += item['desc']
-        if item['count'] == 1:
-            video = {
-                'label': item['owner']['name'] +  ' - ' + item['title'],
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': item['duration'],
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        elif item['count'] > 1:
-            video = {
-                'label': parts_tag(item['count']) + item['owner']['name'] +  ' - ' + item['title'],
-                'path': plugin.url_for('videopages', id=item['bvid']),
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'plot': plot
-                },
-                'info_type': 'video'
-            }
-        else:
-            continue
-        videos.append(video)
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
     return videos
 
 
@@ -1587,7 +1544,6 @@ def history(time):
 
 @plugin.route('/live/<id>/')
 def live(id):
-    qn = 10000
     live_url = ''
     res = cachedGet('https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=' + str(id))
     if res['code'] != 0:
