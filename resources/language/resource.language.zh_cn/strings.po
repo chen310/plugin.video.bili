@@ -51,6 +51,22 @@ msgctxt "#30012"
 msgid "Server Port"
 msgstr "服务器端口"
 
+msgctxt "#30016"
+msgid "Font Size"
+msgstr "字体大小"
+
+msgctxt "#30017"
+msgid "The danmaku style will only take effect after clearing the cache files or restarting Kodi for videos that have already been played."
+msgstr "已经播放过的视频需要清除缓存文件或重启 Kodi 后弹幕样式才能生效"
+
+msgctxt "#30018"
+msgid "Opacity"
+msgstr "不透明度"
+
+msgctxt "#30019"
+msgid "Danmaku Stay Time"
+msgstr "弹幕停留时间"
+
 msgctxt "#30020"
 msgid "Video Resolution"
 msgstr "视频分辨率"
@@ -171,6 +187,10 @@ msgctxt "#30052"
 msgid "When enabled, you can see Kodi's playback history in the browsing history on Bilibili."
 msgstr "开启后，将能够在哔哩哔哩的历史记录中看到 Kodi 的播放记录"
 
+msgctxt "#30053"
+msgid "Remove Cache Files"
+msgstr "清除缓存文件"
+
 msgctxt "#30100"
 msgid "Function Settings"
 msgstr "功能设置"
@@ -238,3 +258,7 @@ msgstr "入站必刷"
 msgctxt "#30116"
 msgid "Open Settings"
 msgstr "打开设置"
+
+msgctxt "#30130"
+msgid "Danmaku Display Area"
+msgstr "弹幕显示区域"

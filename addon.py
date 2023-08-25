@@ -7,6 +7,7 @@ import json
 import qrcode
 import time
 import locale
+import shutil
 from datetime import datetime
 from xbmcswift2 import Plugin, xbmc, xbmcplugin, xbmcvfs, xbmcgui, xbmcaddon
 from danmaku2ass import Danmaku2ASS
@@ -320,6 +321,33 @@ def parse_duration(duration_text):
     return duration
 
 
+@plugin.route('/remove_cache_files/')
+def remove_cache_files():
+    addon_id = 'plugin.video.bili'
+    try:
+        path = xbmc.translatePath('special://temp/%s' % addon_id).decode('utf-8')
+    except AttributeError:
+        path = xbmc.translatePath('special://temp/%s' % addon_id)
+
+    if os.path.isdir(path):
+        try:
+            xbmcvfs.rmdir(path, force=True)
+        except:
+            pass
+    if os.path.isdir(path):
+        try:
+            shutil.rmtree(path)
+        except:
+            pass
+
+    if os.path.isdir(path):
+        xbmcgui.Dialog().ok('提示', '清除失败')
+        return False
+    else:
+        xbmcgui.Dialog().ok('提示', '清除成功')
+        return True
+
+
 @plugin.route('/check_login/')
 def check_login():
     if not get_cookie():
@@ -481,7 +509,13 @@ def generate_ass(cid):
         success = f.write(content)
     if not success:
         return
-    Danmaku2ASS(xmlfile, 'autodetect' , assfile, 1920, 540)
+    font_size = float(getSetting('font_size'))
+    text_opacity = float(getSetting('opacity'))
+    duration = float(getSetting('danmaku_stay_time'))
+    width = 1920
+    height = 540
+    reserve_blank = int((1.0 - float(getSetting('display_area'))) * height)
+    Danmaku2ASS(xmlfile, 'autodetect' , assfile, width, height, reserve_blank=reserve_blank,font_size=font_size, text_opacity=text_opacity,duration_marquee=duration,duration_still=duration)
     if xbmcvfs.exists(assfile):
         return assfile
 

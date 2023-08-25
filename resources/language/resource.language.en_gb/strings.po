@@ -51,6 +51,22 @@ msgctxt "#30012"
 msgid "Server Port"
 msgstr ""
 
+msgctxt "#30016"
+msgid "Font Size"
+msgstr ""
+
+msgctxt "#30017"
+msgid "The danmaku style will only take effect after clearing the cache files or restarting Kodi for videos that have already been played."
+msgstr ""
+
+msgctxt "#30018"
+msgid "Opacity"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Danmaku Stay Time"
+msgstr ""
+
 msgctxt "#30020"
 msgid "Video Resolution"
 msgstr ""
@@ -171,6 +187,10 @@ msgctxt "#30052"
 msgid "When enabled, you can see Kodi's playback history in the browsing history on Bilibili."
 msgstr ""
 
+msgctxt "#30053"
+msgid "Remove Cache Files"
+msgstr ""
+
 msgctxt "#30100"
 msgid "Function Settings"
 msgstr ""
@@ -237,4 +257,8 @@ msgstr ""
 
 msgctxt "#30116"
 msgid "Open Settings"
+msgstr ""
+
+msgctxt "#30130"
+msgid "Danmaku Display Area"
 msgstr ""
