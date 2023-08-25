@@ -151,6 +151,18 @@ msgctxt "#30046"
 msgid "Smooth"
 msgstr "流畅"
 
+msgctxt "#30047"
+msgid "Live Video Encoding"
+msgstr "直播视频编码"
+
+msgctxt "#30048"
+msgid "HEVC"
+msgstr "HEVC"
+
+msgctxt "#30049"
+msgid "AVC"
+msgstr "AVC"
+
 msgctxt "#30051"
 msgid "Upload playback history"
 msgstr "上报播放记录"

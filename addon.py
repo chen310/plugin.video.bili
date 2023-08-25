@@ -90,7 +90,7 @@ def get_video_item(item):
         uname = item['author']
     else:
         uname = ''
-    
+
     if 'pic' in item:
         pic = item['pic']
     elif 'cover' in item:
@@ -115,7 +115,7 @@ def get_video_item(item):
         cid = item['ugc']['first_cid']
     else:
         cid = 0
-    
+
     if 'duration' in item:
         if isinstance(item['duration'], int):
             duration = item['duration']
@@ -130,7 +130,7 @@ def get_video_item(item):
         duration = parse_duration(item['duration_text'])
     else:
         duration = 0
-    
+
     plot = parse_plot(item)
     if (not multi_key) or item[multi_key] == 1:
         video = {
@@ -174,13 +174,13 @@ def parse_plot(item):
         if 'mid' in item:
             plot +='\tID: ' + str(item['mid'])
         plot += '\n'
-    
+
     if 'bvid' in item:
         plot += item['bvid'] + '\n'
 
     if 'pubdate' in item:
         plot += timestamp_to_date(item['pubdate']) + '\n'
-    
+
     if 'copyright' in item and str(item['copyright']) == '1':
         plot += '未经作者授权禁止转载\n'
 
@@ -220,7 +220,7 @@ def parse_plot(item):
     if state:
         plot += state[:-3] + '\n'
     plot += '\n'
-    
+
     if 'achievement' in item and item['achievement']:
         plot += tag(item['achievement'], 'orange') + '\n\n'
     if 'rcmd_reason' in item and isinstance(item['rcmd_reason'], str) and item['rcmd_reason']:
@@ -229,7 +229,7 @@ def parse_plot(item):
         plot += '简介: ' + item['desc']
     elif 'description' in item and item['description']:
         plot += '简介: ' + item['description']
-    
+
     return plot
 
 
@@ -278,6 +278,38 @@ def choose_resolution(videos):
                 final_videos.append(video)
 
     return final_videos
+
+
+def choose_live_resolution(streams):
+    lives = []
+    avc_lives = []
+    hevc_lives = []
+    for stream in streams:
+        for format in stream['format']:
+            for codec in format['codec']:
+                live = {
+                    'protocol_name': stream['protocol_name'],
+                    'format_name': format['format_name'],
+                    'codec_name': codec['codec_name'],
+                    'current_qn': codec['current_qn'],
+                    'url': codec['url_info'][0]['host'] + codec['base_url'] + codec['url_info'][0]['extra']
+                }
+                if codec['codec_name'] == 'avc':
+                    avc_lives.append(live)
+                elif codec['codec_name'] == 'hevc':
+                    hevc_lives.append(live)
+                lives.append(live)
+
+    encoding = getSetting('live_video_encoding')
+    if encoding == '12' and hevc_lives:
+        hevc_lives = sorted(hevc_lives, key=lambda x: (x['current_qn']), reverse=True)
+        return hevc_lives[0]['url']
+    elif avc_lives:
+        avc_lives = sorted(avc_lives, key=lambda x: (x['current_qn']), reverse=True)
+        return avc_lives[0]['url']
+    else:
+        lives = sorted(lives, key=lambda x: (x['current_qn']), reverse=True)
+        return lives[0]['url']
 
 
 def parse_duration(duration_text):
@@ -1353,7 +1385,7 @@ def dynamic(id, page):
         return videos
     list = res['data']['archives']
     for item in list:
-        if 'redirect_url' in item and 'www.bilibili.com/bangumi/play' in item['redirect_url']:            
+        if 'redirect_url' in item and 'www.bilibili.com/bangumi/play' in item['redirect_url']:
             plot = parse_plot(item)
             bangumi_id = item['redirect_url'].split('/')[-1].split('?')[0]
             if bangumi_id.startswith('ep'):
@@ -1544,17 +1576,15 @@ def history(time):
 
 @plugin.route('/live/<id>/')
 def live(id):
-    live_url = ''
-    res = cachedGet('https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=' + str(id))
+    qn = getSetting('live_resolution')
+    res = cachedGet('https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id={}&protocol=0,1&format=0,1,2&codec=0,1&qn={}&platform=web&ptype=8&dolby=5&panorama=1'.format(id, qn))
     if res['code'] != 0:
+        notify_error(res)
         return
-    room_id = res['data']['room_info']['room_id']
-    res = cachedGet('https://api.live.bilibili.com/xlive/web-room/v1/playUrl/playUrl?cid=' + str(room_id) + '&platform=web&qn=' + getSetting('live_resolution') + '&https_url_req=1&ptype=16')
-
-    if res['code'] != 0:
+    if not res['data']['playurl_info']:
         return
-    live_url = res['data']['durl'][0]['url']
-    live_url += '|Referer=https://www.bilibili.com'
+    streams = res['data']['playurl_info']['playurl']['stream']
+    live_url = choose_live_resolution(streams) + '|Referer=https://www.bilibili.com'
     plugin.set_resolved_url(live_url)
 
 

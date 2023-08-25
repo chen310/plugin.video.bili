@@ -151,6 +151,18 @@ msgctxt "#30046"
 msgid "Smooth"
 msgstr ""
 
+msgctxt "#30047"
+msgid "Live Video Encoding"
+msgstr ""
+
+msgctxt "#30048"
+msgid "HEVC"
+msgstr ""
+
+msgctxt "#30049"
+msgid "AVC"
+msgstr ""
+
 msgctxt "#30051"
 msgid "Upload playback history"
 msgstr ""

@@ -126,6 +126,19 @@
 						<heading>30041</heading>
 					</control>
 				</setting>
+				<setting id="live_video_encoding" type="integer" label="30047" help="">
+					<level>0</level>
+					<default>7</default>
+					<constraints>
+						<options>
+							<option label="30048">12</option>
+							<option label="30049">7</option>
+						</options>
+					</constraints>
+					<control type="list" format="string">
+						<heading>30047</heading>
+					</control>
+				</setting>
 			</group>
 			<group id="6">
 				<setting id="report_history" type="boolean" label="30051" help="30052">
