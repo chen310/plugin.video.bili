@@ -612,91 +612,80 @@ def cachedApiGet(url, data={}):
         url += '?' + urlencode(data)
     return cachedGet(url)
 
+
+def get_categories():
+    categories = [
+        {'name': 'home', 'id': 30101, 'path': plugin.url_for('home', page=1)},
+        {'name': 'dynamic_list', 'id': 30102, 'path': plugin.url_for('dynamic_list')},
+        {'name': 'ranking_list', 'id': 30103, 'path': plugin.url_for('ranking_list')},
+        {'name': 'popular_weekly', 'id': 30114, 'path': plugin.url_for('popular_weekly')},
+        {'name': 'popular_history', 'id': 30115, 'path': plugin.url_for('popular_history')},
+        {'name': 'live_areas', 'id': 30104, 'path': plugin.url_for('live_areas', level=1, id=0)},
+        {'name': 'followingLive', 'id': 30105, 'path': plugin.url_for('followingLive', page=1)},
+        {'name': 'my', 'id': 30106, 'path': plugin.url_for('my')},
+        {'name': 'web_dynamic', 'id': 30107, 'path': plugin.url_for('web_dynamic', page=1, offset=0)},
+        {'name': 'followings', 'id': 30108, 'path': plugin.url_for('followings', id=get_uid(), page=1)},
+        {'name': 'followers', 'id': 30109, 'path': plugin.url_for('followers', id=get_uid(), page=1)},
+        {'name': 'watchlater', 'id': 30110, 'path': plugin.url_for('watchlater', page=1)},
+        {'name': 'history', 'id': 30111, 'path': plugin.url_for('history', time=0)},
+        {'name': 'space_videos', 'id': 30112, 'path': plugin.url_for('space_videos', id=get_uid(), page=1)},
+        {'name': 'search_list', 'id': 30113, 'path': plugin.url_for('search_list')},
+        {'name': 'open_settings', 'id': 30116, 'path': plugin.url_for('open_settings')},
+    ]
+    return categories
+
+
 @plugin.route('/')
 def index():
     items = []
-    if getSetting('function.home') == 'true':
-        items.append({
-            'label': localize(30101),
-            'path': plugin.url_for('home', page=1),
-        })
-    if getSetting('function.dynamic_list') == 'true':
-        items.append({
-            'label': localize(30102),
-            'path': plugin.url_for('dynamic_list'),
-        })
-    if getSetting('function.ranking_list') == 'true':
-        items.append({
-            'label': localize(30103),
-            'path': plugin.url_for('ranking_list'),
-        })
-    if getSetting('function.popular_weekly') == 'true':
-        items.append({
-            'label': localize(30114),
-            'path': plugin.url_for('popular_weekly'),
-        })
-    if getSetting('function.popular_history') == 'true':
-        items.append({
-            'label': localize(30115),
-            'path': plugin.url_for('popular_history'),
-        })
-    if getSetting('function.live_areas') == 'true':
-        items.append({
-            'label': localize(30104),
-            'path': plugin.url_for('live_areas', level=1, id=0),
-        })
-    if getSetting('function.followingLive') == 'true':
-        items.append({
-            'label': localize(30105),
-            'path': plugin.url_for('followingLive', page=1),
-        })
-    if getSetting('function.my') == 'true':
-        items.append({
-            'label': localize(30106),
-            'path': plugin.url_for('my'),
-        })
-    if getSetting('function.web_dynamic') == 'true':
-        items.append({
-            'label': localize(30107),
-            'path': plugin.url_for('web_dynamic', page=1, offset=0),
-        })
-    if getSetting('function.followings') == 'true':
-        items.append({
-            'label': localize(30108),
-            'path': plugin.url_for('followings', id=get_uid(), page=1),
-        })
-    if getSetting('function.followers') == 'true':
-        items.append({
-            'label': localize(30109),
-            'path': plugin.url_for('followers', id=get_uid(), page=1),
-        })
-    if getSetting('function.watchlater') == 'true':
-        items.append({
-            'label': localize(30110),
-            'path': plugin.url_for('watchlater', page=1),
-        })
-    if getSetting('function.history') == 'true':
-        items.append({
-            'label': localize(30111),
-            'path': plugin.url_for('history', time=0),
-        })
-    if getSetting('function.space_videos') == 'true':
-        items.append({
-            'label': localize(30112),
-            'path': plugin.url_for('space_videos', id=get_uid(), page=1),
-        })
-    if getSetting('function.search_list') == 'true':
-        items.append({
-            'label': localize(30113),
-            'path': plugin.url_for('search_list'),
-        })
-    if getSetting('function.open_settings') == 'true':
-        items.append({
-            'label': localize(30116),
-            'path': plugin.url_for('open_settings'),
-        })
+    categories = get_categories()
 
+    data = plugin.get_storage('data')
+    if data.get('categories'):
+        categories = data['categories']
+    else:
+        data['categories'] = categories
+
+    for category in categories:
+        if getSetting('function.' + category['name']) == 'true':
+            context_menu = [
+                ('上移菜单项', 'RunPlugin(%s)' % plugin.url_for('move_up', name=category['name'])),
+                ('下移菜单项', 'RunPlugin(%s)' % plugin.url_for('move_down', name=category['name'])),
+                ('恢复默认菜单顺序', 'RunPlugin(%s)' % plugin.url_for('default_menus')),
+            ]
+            items.append({
+                'label': localize(category['id']),
+                'path': category['path'],
+                'context_menu': context_menu,
+            })
     return items
+
+
+@plugin.route('/move_up/<name>/')
+def move_up(name):
+    data = plugin.get_storage('data')
+    categories = data['categories']
+    index = next((i for i, item in enumerate(categories) if item['name'] == name), None)
+    if index is not None and index > 0:
+        categories[index], categories[index-1] = categories[index-1], categories[index]
+    xbmc.executebuiltin('Container.Refresh')
+
+
+@plugin.route('/move_down/<name>/')
+def move_down(name):
+    data = plugin.get_storage('data')
+    categories = data['categories']
+    index = next((i for i, item in enumerate(categories) if item['name'] == name), None)
+    if index is not None and index < len(categories)-1:
+        categories[index], categories[index+1] = categories[index+1], categories[index]
+    xbmc.executebuiltin('Container.Refresh')
+
+
+@plugin.route('/default_menus/')
+def default_menus():
+    data = plugin.get_storage('data')
+    data['categories'] = get_categories()
+    xbmc.executebuiltin('Container.Refresh')
 
 
 @plugin.route('/open_settings/')
