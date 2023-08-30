@@ -33,9 +33,9 @@ def parts_tag(p):
 def convert_number(num):
     if isinstance(num, str):
         return num
-    if num < 9950:
+    if num < 10000:
         return str(num)
-    if num < 99500000:
+    if num < 99999500:
         result = round(num / 10000, 1)
         return str(result) + "万"
     else:
@@ -353,7 +353,7 @@ def check_login():
     if not get_cookie():
         xbmcgui.Dialog().ok('提示', '账号未登录')
         return
-    res = apiGet('/x/web-interface/nav/stat')
+    res = raw_get_api_data('/x/web-interface/nav/stat')
     if res['code'] == 0:
         xbmcgui.Dialog().ok('提示', '登录成功')
     elif res['code'] == -101:
@@ -563,7 +563,7 @@ def get_uid():
     return get_cookie_value('DedeUserID') or '0'
 
 
-def post(url, data):
+def post_data(url, data):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
         'Referer': 'https://www.bilibili.com',
@@ -578,7 +578,7 @@ def post(url, data):
     return res
 
 
-def get(url):
+def raw_fetch_url(url):
     xbmc.log('url_get: ' + url)
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
@@ -595,22 +595,36 @@ def get(url):
 
 
 @plugin.cached(TTL=1)
-def cachedGet(url):
-    return get(url)
+def cached_fetch_url(url):
+    return raw_fetch_url(url)
 
 
-def apiGet(url, data={}):
+def fetch_url(url):
+    if getSetting('network_request_cache') == 'true':
+        return cached_fetch_url(url)
+    else:
+        return raw_fetch_url(url)
+
+
+def raw_get_api_data(url, data={}):
     url = 'https://api.bilibili.com' + url
     if data:
         url += '?' + urlencode(data)
-    return get(url)
+    return raw_fetch_url(url)
 
 
-def cachedApiGet(url, data={}):
+def cached_get_api_data(url, data={}):
     url = 'https://api.bilibili.com' + url
     if data:
         url += '?' + urlencode(data)
-    return cachedGet(url)
+    return cached_fetch_url(url)
+
+
+def get_api_data(url, data={}):
+    if getSetting('network_request_cache') == 'true':
+        return cached_get_api_data(url, data)
+    else:
+        return raw_get_api_data(url, data)
 
 
 def get_categories():
@@ -696,7 +710,7 @@ def open_settings():
 @plugin.route('/popular_history/')
 def popular_history():
     videos = []
-    res = cachedApiGet('/x/web-interface/popular/precious')
+    res = get_api_data('/x/web-interface/popular/precious')
     if res['code'] != 0:
         return videos
     list = res['data']['list']
@@ -710,7 +724,7 @@ def popular_history():
 @plugin.route('/popular_weekly/')
 def popular_weekly():
     categories = []
-    res = cachedApiGet('/x/web-interface/popular/series/list')
+    res = get_api_data('/x/web-interface/popular/series/list')
     if res['code'] != 0:
         return categories
     list = res['data']['list']
@@ -725,7 +739,7 @@ def popular_weekly():
 @plugin.route('/weekly/<number>/')
 def weekly(number):
     videos = []
-    res = cachedApiGet('/x/web-interface/popular/series/one', {'number': number})
+    res = get_api_data('/x/web-interface/popular/series/one', {'number': number})
     if res['code'] != 0:
         return videos
     list = res['data']['list']
@@ -751,7 +765,7 @@ def space_videos(id, page):
         'keyword': '',
         'platform': 'web'
     }
-    res = cachedApiGet('/x/space/wbi/arc/search', data)
+    res = get_api_data('/x/space/wbi/arc/search', data)
     if res['code'] != 0:
         notify_error(res)
         return videos
@@ -783,7 +797,7 @@ def followings(id, page):
         'order': 'desc',
         'order_type': 'attention'
     }
-    res = cachedApiGet('/x/relation/followings', data)
+    res = get_api_data('/x/relation/followings', data)
     if res['code'] != 0:
         notify_error(res)
         return users
@@ -826,7 +840,7 @@ def followers(id, page):
         'order': 'desc',
         'order_type': 'attention'
     }
-    res = cachedApiGet('/x/relation/followers', data)
+    res = get_api_data('/x/relation/followers', data)
     if res['code'] != 0:
         notify_error(res)
         return users
@@ -891,7 +905,7 @@ def seasons_series(uid, page):
         'page_num': page,
         'page_size': ps
     }
-    res = cachedApiGet('/x/polymer/web-space/seasons_series_list', data)
+    res = get_api_data('/x/polymer/web-space/seasons_series_list', data)
     if res['code'] != 0:
         notify_error(res)
         return collections
@@ -941,7 +955,7 @@ def seasons_and_series_detail(id, uid, type, page):
             'ps': ps,
             'pn': page
         }
-    res = cachedApiGet(url, data)
+    res = get_api_data(url, data)
     if res['code'] != 0:
         return videos
     list = res['data']['archives']
@@ -1104,7 +1118,7 @@ def search_by_keyword(type, keyword, page):
     else:
         url = '/x/web-interface/wbi/search/type'
         data['search_type'] = type
-    res = cachedApiGet(url, data)
+    res = get_api_data(url, data)
     if res['code'] != 0:
         return videos
     if 'result' not in res['data']:
@@ -1155,7 +1169,7 @@ def live_area(pid, id, page):
         'page': page,
         'page_size': page_size
     }
-    res = cachedGet('https://api.live.bilibili.com/room/v3/area/getRoomList?' + urlencode(data))
+    res = fetch_url('https://api.live.bilibili.com/room/v3/area/getRoomList?' + urlencode(data))
     if res['code'] != 0:
         return lives
     list = res['data']['list']
@@ -1214,7 +1228,7 @@ def web_dynamic(page, offset):
     }
     if page != '1':
         data['offset'] = offset
-    res = cachedApiGet(url, data)
+    res = get_api_data(url, data)
     if res['code'] != 0:
         return videos
     list = res['data']['items']
@@ -1265,7 +1279,7 @@ def fav_series(uid, type):
     if uid == '0':
         return videos
 
-    res = cachedApiGet('/x/space/bangumi/follow/list', {'vmid': uid, 'type': type})
+    res = get_api_data('/x/space/bangumi/follow/list', {'vmid': uid, 'type': type})
     if res['code'] != 0:
         return videos
 
@@ -1290,7 +1304,7 @@ def favlist_list(uid):
     if uid == '0':
         return videos
 
-    res = cachedApiGet('/x/v3/fav/folder/created/list-all', {'up_mid': uid})
+    res = get_api_data('/x/v3/fav/folder/created/list-all', {'up_mid': uid})
 
     if res['code'] != 0:
         return videos
@@ -1316,7 +1330,7 @@ def favlist(id, page):
         'order': 'mtime',
         'tid': '0'
     }
-    res = cachedApiGet('/x/v3/fav/resource/list', data)
+    res = get_api_data('/x/v3/fav/resource/list', data)
     if res['code'] != 0:
         return videos
     list = res['data']['medias']
@@ -1351,7 +1365,7 @@ def home(page):
         'last_y_num': 4,
         'outside_trigger': ''
     }
-    res = cachedApiGet(url, data)
+    res = get_api_data(url, data)
 
     if res['code'] != 0:
         return videos
@@ -1403,7 +1417,7 @@ def dynamic_list():
 def dynamic(id, page):
     videos = []
     ps = 50
-    res = cachedApiGet('/x/web-interface/dynamic/region', {'pn':page, 'ps':ps, 'rid':id})
+    res = get_api_data('/x/web-interface/dynamic/region', {'pn':page, 'ps':ps, 'rid':id})
     if res['code'] != 0:
         return videos
     list = res['data']['archives']
@@ -1451,7 +1465,7 @@ def ranking_list():
 
 @plugin.route('/ranking/<id>/')
 def ranking(id):
-    res = cachedApiGet('/x/web-interface/ranking/v2', {'rid': id})
+    res = get_api_data('/x/web-interface/ranking/v2', {'rid': id})
     videos = []
     if (res['code'] != 0):
         return videos
@@ -1467,7 +1481,7 @@ def watchlater(page):
     videos = []
     page = int(page)
     url = '/x/v2/history/toview'
-    res = cachedApiGet(url)
+    res = get_api_data(url)
 
     if res['code'] != 0:
         notify_error(res)
@@ -1484,7 +1498,7 @@ def watchlater(page):
 def followingLive(page):
     page = int(page)
     items = []
-    res = cachedGet('https://api.live.bilibili.com/xlive/web-ucenter/user/following?page=' + str(page) + '&page_size=10')
+    res = fetch_url('https://api.live.bilibili.com/xlive/web-ucenter/user/following?page=' + str(page) + '&page_size=10')
     if res['code'] != 0:
         notify_error(res)
         return items
@@ -1524,7 +1538,7 @@ def history(time):
         'view_at': time,
         'ps': 20,
     }
-    res = apiGet(url, data)
+    res = raw_get_api_data(url, data)
     if res['code'] != 0:
         notify_error(res)
         return videos
@@ -1600,7 +1614,7 @@ def history(time):
 @plugin.route('/live/<id>/')
 def live(id):
     qn = getSetting('live_resolution')
-    res = cachedGet('https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id={}&protocol=0,1&format=0,1,2&codec=0,1&qn={}&platform=web&ptype=8&dolby=5&panorama=1'.format(id, qn))
+    res = fetch_url('https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id={}&protocol=0,1&format=0,1,2&codec=0,1&qn={}&platform=web&ptype=8&dolby=5&panorama=1'.format(id, qn))
     if res['code'] != 0:
         notify_error(res)
         return
@@ -1612,7 +1626,7 @@ def live(id):
 
 
 def md2ss(id):
-    res = cachedApiGet('/pgc/review/user', {'media_id': id})
+    res = get_api_data('/pgc/review/user', {'media_id': id})
     if res['code'] == 0:
         return res['result']['media']['season_id']
     return 0
@@ -1624,7 +1638,7 @@ def bangumi(type, id):
     if type == 'media_id':
         type = 'season_id'
         id = md2ss(id)
-    res = cachedApiGet('/pgc/view/web/season', {type: id})
+    res = get_api_data('/pgc/view/web/season', {type: id})
     if res['code'] != 0:
         return items
     episodes = res['result']['episodes']
@@ -1654,7 +1668,7 @@ def bangumi(type, id):
 @plugin.route('/videopages/<id>/')
 def videopages(id):
     videos = []
-    res = cachedApiGet('/x/web-interface/view', {'bvid': id})
+    res = get_api_data('/x/web-interface/view', {'bvid': id})
     data = res['data']
     if res['code'] != 0:
         return videos
@@ -1686,7 +1700,7 @@ def report_history(bvid, cid):
         'cid': cid,
         'csrf': get_cookie_value('bili_jct')
     }
-    res = post('https://api.bilibili.com/x/click-interface/web/heartbeat', data)
+    res = post_data('https://api.bilibili.com/x/click-interface/web/heartbeat', data)
     return res
 
 
@@ -1696,7 +1710,7 @@ def video(id, cid, ispgc):
     video_url = ''
     enable_dash = getSetting('enable_dash') == 'true'
     if cid == '0':
-        res = cachedApiGet('/x/web-interface/view', {'bvid': id})
+        res = get_api_data('/x/web-interface/view', {'bvid': id})
 
         data = res['data']
         if res['code'] != 0:
@@ -1732,7 +1746,7 @@ def video(id, cid, ispgc):
             'fourk': 1
         }
 
-    res = cachedApiGet(url, data=params)
+    res = get_api_data(url, data=params)
 
     if res['code'] != 0:
         return

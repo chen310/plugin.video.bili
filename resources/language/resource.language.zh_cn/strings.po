@@ -179,6 +179,10 @@ msgctxt "#30049"
 msgid "AVC"
 msgstr "AVC"
 
+msgctxt "#30050"
+msgid "Other"
+msgstr "其他"
+
 msgctxt "#30051"
 msgid "Upload playback history"
 msgstr "上报播放记录"
@@ -190,6 +194,18 @@ msgstr "开启后，将能够在哔哩哔哩的历史记录中看到 Kodi 的播
 msgctxt "#30053"
 msgid "Remove Cache Files"
 msgstr "清除缓存文件"
+
+msgctxt "#30054"
+msgid "Remove danmaku files, QR code images and MPD format DASH files."
+msgstr "清除弹幕文件、二维码图片、MPD 格式的 DASH 文件"
+
+msgctxt "#30055"
+msgid "Network Request Cache"
+msgstr "网络请求缓存"
+
+msgctxt "#30056"
+msgid " When enabled, the software will cache network requests for a duration of 1 minute."
+msgstr "开启后，软件将对网络请求进行缓存，缓存时间为1分钟"
 
 msgctxt "#30100"
 msgid "Function Settings"

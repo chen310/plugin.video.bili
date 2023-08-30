@@ -188,13 +188,13 @@
 					</control>
 				</setting>
 			</group>
-			<group id="6">
+			<group id="6" label="30050">
 				<setting id="report_history" type="boolean" label="30051" help="30052">
 					<level>0</level>
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="remove_cache_files" type="string" label="30053" help="">
+				<setting id="remove_cache_files" type="string" label="30053" help="30054">
 					<level>0</level>
 					<default/>
 					<constraints>
@@ -203,6 +203,11 @@
 					<control type="button" format="action">
 						<data>RunPlugin(plugin://plugin.video.bili/remove_cache_files/)</data>
 					</control>
+				</setting>
+				<setting id="network_request_cache" type="boolean" label="30055" help="30056">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
 				</setting>
 			</group>
 		</category>
