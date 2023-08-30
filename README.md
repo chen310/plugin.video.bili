@@ -6,9 +6,9 @@
 
 ### 截图
 
-![主页](https://cdn.jsdelivr.net/gh/chen310/plugin.video.bili/public/home.png)
-![设置](https://cdn.jsdelivr.net/gh/chen310/plugin.video.bili/public/settings.png)
-![视频](https://cdn.jsdelivr.net/gh/chen310/plugin.video.bili/public/video.png)
+![主页](public/home.png)
+![设置](public/settings.png)
+![视频](public/video.png)
 
 ### 感谢
 
