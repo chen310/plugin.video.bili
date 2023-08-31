@@ -134,9 +134,13 @@ def get_video_item(item):
         duration = 0
 
     plot = parse_plot(item)
+    if uname:
+        label = f"{uname} - {title}"
+    else:
+        label = title
     if (not multi_key) or item[multi_key] == 1:
         video = {
-            'label': f"{uname} - {title}",
+            'label': label,
             'path': plugin.url_for('video', id=item['bvid'], cid=cid, ispgc='false'),
             'is_playable': True,
             'icon': pic,
@@ -150,9 +154,8 @@ def get_video_item(item):
             'info_type': 'video'
         }
     elif item[multi_key] > 1:
-        label = parts_tag(item[multi_key]) + f"{uname} - {title}"
         video = {
-            'label': label,
+            'label': parts_tag(item[multi_key]) + label,
             'path': plugin.url_for('videopages', id=bvid),
             'icon': pic,
             'thumbnail': pic,
@@ -961,20 +964,9 @@ def seasons_and_series_detail(id, uid, type, page):
         return videos
     list = res['data']['archives']
     for item in list:
-        video = {
-            'label': item['title'],
-            'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-            'is_playable': True,
-            'icon': item['pic'],
-            'thumbnail': item['pic'],
-            'info': {
-                'mediatype': 'video',
-                'title': item['title'],
-                'duration': item['duration']
-            },
-            'info_type': 'video',
-        }
-        videos.append(video)
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
     if type == 'season':
         if res['data']['page']['page_num'] * res['data']['page']['page_size'] < res['data']['page']['total']:
             videos.append({
@@ -1175,6 +1167,11 @@ def live_area(pid, id, page):
         return lives
     list = res['data']['list']
     for item in list:
+        plot = f"UP: {item['uname']}\tID: {item['uid']}\n房间号: {item['roomid']}\n\n"
+        if item['verify']['desc']:
+            plot += tag(item['verify']['desc'], 'orange') + '\n\n'
+        plot += item['title']
+
         live = {
             'label': item['uname'] + ' - ' + item['title'],
             'path': plugin.url_for('live', id=item['roomid']),
@@ -1184,6 +1181,7 @@ def live_area(pid, id, page):
             'info': {
                 'mediatype': 'video',
                 'title': item['title'],
+                'plot': plot,
             },
             'info_type': 'video'
         }
@@ -1252,6 +1250,8 @@ def web_dynamic(page, offset):
                 label = tag('【直播中】', 'red') + author + ' - ' + item['live_play_info']['title']
             else:
                 label = tag('【未直播】', 'grey') + author + ' - ' + item['live_play_info']['title']
+            plot = f"UP: {author}\tID: {mid}\n房间号: {item['live_play_info']['room_id']}\n{item['live_play_info']['watched_show']['text_large']}\n"
+            plot += f"分区: {tag(item['live_play_info']['parent_area_name'], 'blue')} {tag(item['live_play_info']['area_name'], 'blue')}"
             video = {
                 'label': label,
                 'path': plugin.url_for('live', id=item["live_play_info"]["room_id"]),
@@ -1261,6 +1261,7 @@ def web_dynamic(page, offset):
                 'info': {
                     'mediatype': 'video',
                     'title': item['live_play_info']['title'],
+                    'plot': plot
                 },
                 'info_type': 'video',
             }
@@ -1380,13 +1381,16 @@ def home(page):
                 label = tag('【直播中】', 'red') + item['owner']['name'] + ' - ' + item['title']
             else:
                 label = tag('【未直播】', 'grey') + item['owner']['name'] + ' - ' + item['title']
-
+            plot = f"UP: {item['owner']['name']}\tID: {item['owner']['mid']}\n房间号: {item['room_info']['room_id']}\n{item['watched_show']['text_large']}\n分区: {item['area']['area_name']}"
             video = {
                 'label': label,
                 'path': plugin.url_for('live', id=item['url'].split('/')[-1]),
                 'is_playable': True,
                 'icon': item['pic'],
-                'thumbnail': item['pic']
+                'thumbnail': item['pic'],
+                'info': {
+                    'plot': plot
+                }
             }
         else:
             video = get_video_item(item)
@@ -1499,7 +1503,7 @@ def watchlater(page):
 def followingLive(page):
     page = int(page)
     items = []
-    res = fetch_url('https://api.live.bilibili.com/xlive/web-ucenter/user/following?page=' + str(page) + '&page_size=10')
+    res = fetch_url(f'https://api.live.bilibili.com/xlive/web-ucenter/user/following?page={page}&page_size=10')
     if res['code'] != 0:
         notify_error(res)
         return items
@@ -1519,6 +1523,7 @@ def followingLive(page):
             'info': {
                 'mediatype': 'video',
                 'title': live['title'],
+                'plot': f"UP: {live['uname']}\tID: {live['uid']}\n房间号: {live['roomid']}\n\n{live['title']}",
             },
             'info_type': 'video'
         }
@@ -1658,7 +1663,8 @@ def bangumi(type, id):
             'info': {
                 'mediatype': 'video',
                 'title': episode['share_copy'],
-                'duration': episode['duration'] / 1000
+                'duration': episode['duration'] / 1000,
+                'plot': f"{episode['share_copy']}\n{episode['bvid']}\nep{episode['ep_id']}",
             },
             'info_type': 'video',
         }
