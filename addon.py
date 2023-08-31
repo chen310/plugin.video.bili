@@ -23,11 +23,11 @@ plugin = Plugin()
 
 
 def tag(info, color='red'):
-    return '[COLOR ' + color + ']' + info + '[/COLOR]'
+    return f'[COLOR {color}]{info}[/COLOR]'
 
 
 def parts_tag(p):
-    return tag('【' + str(p) + 'P】', 'red')
+    return tag(f'【{p}P】', 'red')
 
 
 def convert_number(num):
@@ -56,7 +56,8 @@ def notify_error(res):
     message = '未知错误'
     if 'message' in res:
         message = res['message']
-    notify('提示', str(res['code']) + ': ' + message)
+    notify('提示', f'{res["code"]}: {message}')
+
 
 def localize(id):
     return xbmcaddon.Addon().getLocalizedString(id)
@@ -71,7 +72,7 @@ def clear_text(text):
 
 
 def get_video_item(item):
-    if 'attr' in item and item['attr'] != 0:
+    if item.get('attr', 0) != 0:
         return
 
     if 'videos' in item and isinstance(item['videos'], int):
@@ -135,7 +136,7 @@ def get_video_item(item):
     plot = parse_plot(item)
     if (not multi_key) or item[multi_key] == 1:
         video = {
-            'label': uname + ' - ' + title,
+            'label': f"{uname} - {title}",
             'path': plugin.url_for('video', id=item['bvid'], cid=cid, ispgc='false'),
             'is_playable': True,
             'icon': pic,
@@ -149,7 +150,7 @@ def get_video_item(item):
             'info_type': 'video'
         }
     elif item[multi_key] > 1:
-        label = parts_tag(item[multi_key]) + uname + ' - ' + title
+        label = parts_tag(item[multi_key]) + f"{uname} - {title}"
         video = {
             'label': label,
             'path': plugin.url_for('videopages', id=bvid),
@@ -167,20 +168,20 @@ def get_video_item(item):
 def parse_plot(item):
     plot = ''
     if 'upper' in item:
-        plot += 'UP: ' + item['upper']['name'] + '\tID: ' + str(item['upper']['mid']) + '\n'
+        plot += f"UP: {item['upper']['name']}\tID: {item['upper']['mid']}\n"
     elif 'owner' in item:
-        plot += 'UP: ' + item['owner']['name'] + '\tID: ' + str(item['owner']['mid']) + '\n'
+        plot += f"UP: {item['owner']['name']}\tID: {item['owner']['mid']}\n"
     elif 'author' in item:
-        plot += 'UP: ' + item['author']
+        plot += f"UP: {item['author']}"
         if 'mid' in item:
-            plot +='\tID: ' + str(item['mid'])
+            plot += f'\tID: {item["mid"]}'
         plot += '\n'
 
     if 'bvid' in item:
-        plot += item['bvid'] + '\n'
+        plot += f"{item['bvid']}\n"
 
     if 'pubdate' in item:
-        plot += timestamp_to_date(item['pubdate']) + '\n'
+        plot += f"{timestamp_to_date(item['pubdate'])}\n"
 
     if 'copyright' in item and str(item['copyright']) == '1':
         plot += '未经作者授权禁止转载\n'
@@ -189,47 +190,47 @@ def parse_plot(item):
     if 'stat' in item:
         stat = item['stat']
         if 'view' in stat:
-            state += convert_number(stat['view']) + '播放 · '
+            state += f"{convert_number(stat['view'])}播放 · "
         elif  'play' in stat:
-            state += convert_number(stat['play']) + '播放 · '
+            state += f"{convert_number(stat['play'])}播放 · "
         if 'like' in stat:
-            state += convert_number(stat['like']) + '点赞 · '
+            state += f"{convert_number(stat['like'])}点赞 · "
         if 'coin' in stat:
-            state += convert_number(stat['coin']) + '投币 · '
+            state += f"{convert_number(stat['coin'])}投币 · "
         if 'favorite' in stat:
-            state += convert_number(stat['favorite']) + '收藏 · '
+            state += f"{convert_number(stat['favorite'])}收藏 · "
         if 'reply' in stat:
-            state += convert_number(stat['reply']) + '评论 · '
+            state += f"{convert_number(stat['reply'])}评论 · "
         if 'danmaku' in stat:
-            state += convert_number(stat['danmaku']) + '弹幕 · '
+            state += f"{convert_number(stat['danmaku'])}弹幕 · "
         if 'share' in stat:
-            state += convert_number(stat['share']) + '分享 · '
+            state += f"{convert_number(stat['share'])}分享 · "
     elif 'cnt_info' in item:
         stat = item['cnt_info']
         if 'play' in item:
-            state += convert_number(stat['play']) + '播放 · '
+            state += f"{convert_number(stat['play'])}播放 · "
         if 'collect' in stat:
-            state += convert_number(stat['collect']) + '收藏 · '
+            state += f"{convert_number(stat['collect'])}收藏 · "
         if 'danmaku' in stat:
-            state += convert_number(stat['danmaku']) + '弹幕 · '
+            state += f"{convert_number(stat['danmaku'])}弹幕 · "
     else:
         if 'play' in item and isinstance(item['play'], int):
-            state += convert_number(item['play']) + '播放 · '
+            state += f"{convert_number(item['play'])}播放 · "
         if 'comment' in item and isinstance(item['comment'], int):
-            state += convert_number(item['comment']) + '评论 · '
+            state += f"{convert_number(item['comment'])}评论 · "
 
     if state:
-        plot += state[:-3] + '\n'
+        plot += f"{state[:-3]}\n"
     plot += '\n'
 
     if 'achievement' in item and item['achievement']:
-        plot += tag(item['achievement'], 'orange') + '\n\n'
+        plot += f"{tag(item['achievement'], 'orange')}\n\n"
     if 'rcmd_reason' in item and isinstance(item['rcmd_reason'], str) and item['rcmd_reason']:
-        plot += '推荐理由：' + item['rcmd_reason'] + '\n\n'
+        plot += f"推荐理由：{item['rcmd_reason']}\n\n"
     if 'desc' in item and item['desc']:
-        plot += '简介: ' + item['desc']
+        plot += f"简介: {item['desc']}"
     elif 'description' in item and item['description']:
-        plot += '简介: ' + item['description']
+        plot += f"简介: {item['description']}"
 
     return plot
 
@@ -325,9 +326,9 @@ def parse_duration(duration_text):
 def remove_cache_files():
     addon_id = 'plugin.video.bili'
     try:
-        path = xbmc.translatePath('special://temp/%s' % addon_id).decode('utf-8')
+        path = xbmc.translatePath(f'special://temp/{addon_id}').decode('utf-8')
     except AttributeError:
-        path = xbmc.translatePath('special://temp/%s' % addon_id)
+        path = xbmc.translatePath(f'special://temp/{addon_id}')
 
     if os.path.isdir(path):
         try:
@@ -421,7 +422,7 @@ def polling_login_status(key):
     session = requests.Session()
     for i in range(50):
         try:
-            response = session.get('https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=' + key)
+            response = session.get(f'https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key={key}')
             check_result = response.json()
         except:
             time.sleep(3)
@@ -500,7 +501,7 @@ def generate_ass(cid):
     }
 
     try:
-        res = requests.get('https://comment.bilibili.com/' + str(cid) + '.xml', headers=headers)
+        res = requests.get(f'https://comment.bilibili.com/{cid}.xml', headers=headers)
         res.encoding = 'utf-8'
         content = res.text
     except:
@@ -730,7 +731,7 @@ def popular_weekly():
     list = res['data']['list']
     for item in list:
         categories.append({
-            'label': item['name'] + ' ' + item['subject'],
+            'label': f"{item['name']} {item['subject']}",
             'path':plugin.url_for('weekly', number = item['number']),
         })
     return categories
@@ -753,7 +754,7 @@ def weekly(number):
 def space_videos(id, page):
     videos = []
     if id == '0':
-        notify('提示', '未设置 uid')
+        notify('提示', '未登录')
         return videos
     ps = 50
     data = {
@@ -787,7 +788,7 @@ def space_videos(id, page):
 def followings(id, page):
     users = []
     if id == '0':
-        notify('提示', '未设置 uid')
+        notify('提示', '未登录')
         return users
     ps = 50
     data = {
@@ -814,7 +815,7 @@ def followings(id, page):
             'icon': item['face'],
             'thumbnail': item['face'],
             'info': {
-                'plot': 'UP:' + item['uname'] + '\tID: ' + str(item['mid']) + '\n'  + '签名: ' + item['sign']
+                'plot': f"UP: {item['uname']}\tID: {item['mid']}\n签名: {item['sign']}"
             },
         }
         users.append(user)
@@ -830,7 +831,7 @@ def followings(id, page):
 def followers(id, page):
     users = []
     if id == '0':
-        notify('提示', '未设置 uid')
+        notify('提示', '未登录')
         return users
     ps = 50
     data = {
@@ -857,7 +858,7 @@ def followers(id, page):
             'icon': item['face'],
             'thumbnail': item['face'],
             'info': {
-                'plot': 'UP:' + item['uname'] + '\tID: ' + str(item['mid']) + '\n'  + '签名: ' + item['sign']
+                'plot': f"UP: {item['uname']}\tID: {item['mid']}\n签名: {item['sign']}"
             },
         }
         users.append(user)
@@ -1035,7 +1036,7 @@ def get_search_list(list):
         if item['type'] == 'video':
             plot = parse_plot(item)
             video = {
-                'label': item['author'] + ' - ' + clear_text(item['title']),
+                'label': f"{item['author']} - {clear_text(item['title'])}",
                 'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
                 'is_playable': True,
                 'icon': item['pic'],
@@ -1053,8 +1054,8 @@ def get_search_list(list):
                 cv_type = '声优'
             else:
                 cv_type = '出演'
-            plot = tag(clear_text(item['title']), 'pink') + ' ' + item['index_show'] + '\n\n'
-            plot += '地区: ' + item['areas'] + '\n'
+            plot = f"{tag(clear_text(item['title']), 'pink')} {item['index_show']}\n\n"
+            plot += f"地区: {item['areas']}\n"
             plot += cv_type + ': ' + clear_text(item['cv']).replace('\n', '/') + '\n'
             plot += item['staff'] + '\n'
             plot += '\n'
@@ -1069,12 +1070,12 @@ def get_search_list(list):
                 }
             }
         elif item['type'] == 'bili_user':
-            plot = 'UP: ' + item['uname'] + '\tLV' + str(item['level']) + '\n'
-            plot += 'ID: ' + str(item['mid']) + '\n'
-            plot += '粉丝: ' + str(convert_number(item['fans'])) + '\n\n'
-            plot += '签名: ' + item['usign'] + '\n'
+            plot = f"UP: {item['uname']}\tLV{item['level']}\n"
+            plot += f"ID: {item['mid']}\n"
+            plot += f"粉丝: {convert_number(item['fans'])}\n\n"
+            plot += f"签名: {item['usign']}\n"
             video = {
-                'label': tag('【用户】') + item['uname'],
+                'label': f"{tag('【用户】')}{item['uname']}",
                 'path': plugin.url_for('user', id=item['mid']),
                 'icon': item['upic'],
                 'thumbnail': item['upic'],
@@ -1198,7 +1199,7 @@ def live_area(pid, id, page):
 def my():
     uid= get_uid()
     if uid == '0':
-        notify('提示', '未设置 uid')
+        notify('提示', '未登录')
         return []
     items = [
         {
