@@ -881,6 +881,10 @@ def user(id):
             'path': plugin.url_for('space_videos', id=id, page=1),
         },
         {
+            'label': '直播间',
+            'path': plugin.url_for('user_live_room', uid=id),
+        },
+        {
             'label': '合集和列表',
             'path': plugin.url_for('seasons_series', uid=id, page=1),
         },
@@ -898,6 +902,33 @@ def user(id):
         },
     ]
 
+
+@plugin.route('/user_live_room/<uid>/')
+def user_live_room(uid):
+    res = get_api_data('/x/space/wbi/acc/info', {'mid': uid})
+    if res['code'] != 0:
+        return []
+    item = res['data']
+    if not item['live_room']:
+        notify('提示', '直播间不存在')
+        return []
+    plot = f"UP: {item['name']}\tID: {item['mid']}\n房间号: {item['live_room']['roomid']}\n{item['live_room']['watched_show']['text_large']}"
+    if item['live_room']['liveStatus'] == 1:
+        label = f"{tag('【直播中】', 'red')}{item['name']} - {item['live_room']['title']}"
+    else:
+        label = f"{tag('【未直播】', 'grey')}{item['name']} - {item['live_room']['title']}"
+    return [{
+        'label': label,
+        'path': plugin.url_for('live', id=item['live_room']['roomid']),
+        'is_playable': True,
+        'icon': item["live_room"]["cover"],
+        'thumbnail': item["live_room"]["cover"],
+        'info': {
+            'mediatype': 'video',
+            'title': item['live_room']['title'],
+            'plot': plot
+        }
+    }]
 
 
 @plugin.route('/seasons_series/<uid>/<page>/')
