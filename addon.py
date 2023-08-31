@@ -632,6 +632,7 @@ def get_api_data(url, data={}):
 
 
 def get_categories():
+    uid = get_uid()
     categories = [
         {'name': 'home', 'id': 30101, 'path': plugin.url_for('home', page=1)},
         {'name': 'dynamic_list', 'id': 30102, 'path': plugin.url_for('dynamic_list')},
@@ -640,29 +641,48 @@ def get_categories():
         {'name': 'popular_history', 'id': 30115, 'path': plugin.url_for('popular_history')},
         {'name': 'live_areas', 'id': 30104, 'path': plugin.url_for('live_areas', level=1, id=0)},
         {'name': 'followingLive', 'id': 30105, 'path': plugin.url_for('followingLive', page=1)},
-        {'name': 'my', 'id': 30106, 'path': plugin.url_for('my')},
+        {'name': 'my_collection', 'id': 30106, 'path': plugin.url_for('my_collection')},
         {'name': 'web_dynamic', 'id': 30107, 'path': plugin.url_for('web_dynamic', page=1, offset=0)},
-        {'name': 'followings', 'id': 30108, 'path': plugin.url_for('followings', id=get_uid(), page=1)},
-        {'name': 'followers', 'id': 30109, 'path': plugin.url_for('followers', id=get_uid(), page=1)},
+        {'name': 'followings', 'id': 30108, 'path': plugin.url_for('followings', id=uid, page=1)},
+        {'name': 'followers', 'id': 30109, 'path': plugin.url_for('followers', id=uid, page=1)},
         {'name': 'watchlater', 'id': 30110, 'path': plugin.url_for('watchlater', page=1)},
         {'name': 'history', 'id': 30111, 'path': plugin.url_for('history', time=0)},
-        {'name': 'space_videos', 'id': 30112, 'path': plugin.url_for('space_videos', id=get_uid(), page=1)},
+        {'name': 'space_videos', 'id': 30112, 'path': plugin.url_for('space_videos', id=uid, page=1)},
+        {'name': 'my', 'id': 30117, 'path': plugin.url_for('user', id=uid)},
         {'name': 'search_list', 'id': 30113, 'path': plugin.url_for('search_list')},
         {'name': 'open_settings', 'id': 30116, 'path': plugin.url_for('open_settings')},
     ]
     return categories
 
+def update_categories():
+    categories = get_categories()
+    data = plugin.get_storage('data')
+    sorted_categories = data.get('categories')
+    if not sorted_categories:
+        sorted_categories = categories
+        return categories
+    
+    kv = dict()
+    for category in categories:
+        kv[category['id']] = category
+    
+    visited = []
+    new_categories = []
+    for category in sorted_categories:
+        if category['id'] in kv:
+            visited.append(category['id'])
+            new_categories.append(kv[category['id']])
+    for id in kv:
+        if id not in visited:
+            new_categories.append(kv[id])
+    data['categories'] = new_categories
+    return new_categories
+
 
 @plugin.route('/')
 def index():
     items = []
-    categories = get_categories()
-
-    data = plugin.get_storage('data')
-    if data.get('categories'):
-        categories = data['categories']
-    else:
-        data['categories'] = categories
+    categories = update_categories()
 
     for category in categories:
         if getSetting('function.' + category['name']) == 'true':
@@ -1224,8 +1244,8 @@ def live_area(pid, id, page):
         })
     return lives
 
-@plugin.route('/my/')
-def my():
+@plugin.route('/my_collection/')
+def my_collection():
     uid= get_uid()
     if uid == '0':
         notify('提示', '未登录')

@@ -275,6 +275,10 @@ msgctxt "#30116"
 msgid "Open Settings"
 msgstr "打开设置"
 
+msgctxt "#30117"
+msgid "My"
+msgstr "我的"
+
 msgctxt "#30130"
 msgid "Danmaku Display Area"
 msgstr "弹幕显示区域"

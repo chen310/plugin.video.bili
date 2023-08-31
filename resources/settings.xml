@@ -238,7 +238,7 @@
 					<default>true</default>
 					<control type="toggle"/>
 				</setting>
-				<setting id="function.my" type="boolean" label="30106" help="">
+				<setting id="function.my_collection" type="boolean" label="30106" help="">
 					<level>0</level>
 					<default>true</default>
 					<control type="toggle"/>
@@ -289,6 +289,11 @@
 					<control type="toggle"/>
 				</setting>
 				<setting id="function.open_settings" type="boolean" label="30116" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="function.my" type="boolean" label="30117" help="">
 					<level>0</level>
 					<default>true</default>
 					<control type="toggle"/>
