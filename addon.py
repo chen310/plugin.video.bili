@@ -1351,7 +1351,7 @@ def fav_series(uid, type):
     return videos
 
 
-@plugin.route('/fav_series/<uid>/')
+@plugin.route('/favlist_list/<uid>/')
 def favlist_list(uid):
     videos = []
     if uid == '0':
