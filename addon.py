@@ -832,13 +832,19 @@ def followings(id, page):
             uname = item['uname']
         else:
             uname = tag(item['uname'], 'pink')
+        plot = f"UP: {item['uname']}\tID: {item['mid']}\n\n"
+        if item['official_verify']['desc']:
+            plot += tag(item['official_verify']['desc'], 'orange') + '\n'
+        plot += '\n'
+        if item['sign']:
+            plot += f"签名: {item['sign']}"
         user = {
             'label': uname,
             'path': plugin.url_for('user', id=item['mid']),
             'icon': item['face'],
             'thumbnail': item['face'],
             'info': {
-                'plot': f"UP: {item['uname']}\tID: {item['mid']}\n签名: {item['sign']}"
+                'plot': plot
             },
         }
         users.append(user)
@@ -875,13 +881,19 @@ def followers(id, page):
             uname = item['uname']
         else:
             uname = tag(item['uname'], 'pink')
+        plot = f"UP: {item['uname']}\tID: {item['mid']}\n\n"
+        if item['official_verify']['desc']:
+            plot += tag(item['official_verify']['desc'], 'orange') + '\n'
+        plot += '\n'
+        if item['sign']:
+            plot += f"签名: {item['sign']}"
         user = {
             'label': uname,
             'path': plugin.url_for('user', id=item['mid']),
             'icon': item['face'],
             'thumbnail': item['face'],
             'info': {
-                'plot': f"UP: {item['uname']}\tID: {item['mid']}\n签名: {item['sign']}"
+                'plot': plot
             },
         }
         users.append(user)
