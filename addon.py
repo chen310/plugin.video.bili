@@ -661,11 +661,11 @@ def update_categories():
     if not sorted_categories:
         sorted_categories = categories
         return categories
-    
+
     kv = dict()
     for category in categories:
         kv[category['id']] = category
-    
+
     visited = []
     new_categories = []
     for category in sorted_categories:
@@ -1341,11 +1341,39 @@ def fav_series(uid, type):
         label = item['title']
         if item['season_type_name']:
             label = tag('【' + item['season_type_name'] + '】', 'pink') + label
+        plot = f"{tag(item['title'], 'pink')}\t{item['new_ep']['index_show']}\n"
+        if item['publish']['release_date_show']:
+            plot += f"发行时间: {item['publish']['release_date_show']}\n"
+        if item['styles']:
+            plot += f"类型: {tag(' '.join(item['styles']), 'blue')}\n"
+        if item['areas']:
+            plot += f"地区: {' '.join( [area['name'] for area in item['areas']])}\n"
+        state = ''
+        if 'stat' in item:
+            stat = item['stat']
+            if 'view' in stat:
+                state += f"{convert_number(stat['view'])}播放 · "
+            if 'likes' in stat:
+                state += f"{convert_number(stat['likes'])}点赞 · "
+            if 'coin' in stat:
+                state += f"{convert_number(stat['coin'])}投币 · "
+            if 'favorite' in stat:
+                state += f"{convert_number(stat['favorite'])}收藏 · "
+            if 'reply' in stat:
+                state += f"{convert_number(stat['reply'])}评论 · "
+            if 'danmaku' in stat:
+                state += f"{convert_number(stat['danmaku'])}弹幕 · "
+            if state:
+                plot += f"{state[:-3]}\n"
+        plot += f"\n{item['summary']}"
         video = {
             'label': label,
             'path': plugin.url_for('bangumi', type='season_id' ,id=item['season_id']),
             'icon': item['cover'],
-            'thumbnail': item['cover']
+            'thumbnail': item['cover'],
+            'info': {
+                'plot': plot
+            }
         }
         videos.append(video)
     return videos
@@ -1397,7 +1425,6 @@ def favlist(id, page):
             'path': plugin.url_for('favlist', id=id, page=int(page)+1)
         })
     return videos
-
 
 
 @plugin.route('/home/<page>/')
