@@ -1103,6 +1103,10 @@ def search_list():
             'path': plugin.url_for('search', type='media_ft', page=1)
         },
         {
+            'label': '直播搜索',
+            'path': plugin.url_for('search', type='live', page=1)
+        },
+        {
             'label': '用户搜索',
             'path': plugin.url_for('search', type='bili_user', page=1)
         },
@@ -1196,7 +1200,63 @@ def search_by_keyword(type, keyword, page):
             if result['result_type'] in ['video', 'media_bangumi', 'media_ft', 'bili_user']:
                 videos.extend(get_search_list(result['data']))
     else:
-        videos.extend(get_search_list(list))
+        if type == 'live':
+            lives = res['data']['result']['live_user']
+            for item in lives:
+                uname = clear_text(item['uname'])
+                plot = f"UP: {uname}\tID: {item['uid']}\n房间号: {item['roomid']}\n\n"
+                context_menu = [
+                    (f"转到UP: {uname}", f"Container.Update({plugin.url_for('user', id=item['uid'])})")
+                ]
+
+                if item['live_status'] == 1:
+                    label = tag('【直播中】', 'red') + item['uname'].replace('<em class=\"keyword\">', '[COLOR pink]').replace('</em>', '[/COLOR]')
+                else:
+                    label = tag('【未直播】', 'grey') + item['uname'].replace('<em class=\"keyword\">', '[COLOR pink]').replace('</em>', '[/COLOR]')
+                live = {
+                    'label': label,
+                    'path': plugin.url_for('live', id=item['roomid']),
+                    'is_playable': True,
+                    'icon': item['uface'],
+                    'thumbnail': item['uface'],
+                    'context_menu': context_menu,
+                    'info': {
+                        'mediatype': 'video',
+                        'title': uname,
+                        'plot': plot,
+                    },
+                    'info_type': 'video'
+                }
+                videos.append(live)
+            lives = res['data']['result']['live_room']
+            for item in lives:
+                uname = item['uname']
+                plot = f"UP: {uname}\tID: {item['uid']}\n房间号: {item['roomid']}\n\n"
+                context_menu = [
+                    (f"转到UP: {uname}", f"Container.Update({plugin.url_for('user', id=item['uid'])})")
+                ]
+
+                if item['live_status'] == 1:
+                    label = tag('【直播中】', 'red') + item['uname'] + ' - ' + item['title'].replace('<em class=\"keyword\">', '[COLOR pink]').replace('</em>', '[/COLOR]')
+                else:
+                    label = tag('【未直播】', 'grey') + item['uname'] + ' - ' + item['title'].replace('<em class=\"keyword\">', '[COLOR pink]').replace('</em>', '[/COLOR]')
+                live = {
+                    'label': label,
+                    'path': plugin.url_for('live', id=item['roomid']),
+                    'is_playable': True,
+                    'icon': item['uface'],
+                    'thumbnail': item['uface'],
+                    'context_menu': context_menu,
+                    'info': {
+                        'mediatype': 'video',
+                        'title': clear_text(item['title']),
+                        'plot': plot,
+                    },
+                    'info_type': 'video'
+                }
+                videos.append(live)
+        else:
+            videos.extend(get_search_list(list))
     if res['data']['page'] < res['data']['numPages']:
         videos.append({
             'label': tag('下一页', 'yellow'),
