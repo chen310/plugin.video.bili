@@ -100,6 +100,8 @@ def get_video_item(item):
     if not mid:
         if 'mid' in item:
             mid = item['mid']
+        elif 'uid' in item:
+            mid = item['uid']
         elif 'author_mid' in item:
             mid = item['author_mid']
 
@@ -966,12 +968,16 @@ def user_live_room(uid):
         label = f"{tag('【直播中】', 'red')}{item['name']} - {item['live_room']['title']}"
     else:
         label = f"{tag('【未直播】', 'grey')}{item['name']} - {item['live_room']['title']}"
+    context_menu = [
+        (f"转到UP: {item['name']}", f"Container.Update({plugin.url_for('user', id=item['mid'])})")
+    ]
     return [{
         'label': label,
         'path': plugin.url_for('live', id=item['live_room']['roomid']),
         'is_playable': True,
         'icon': item["live_room"]["cover"],
         'thumbnail': item["live_room"]["cover"],
+        'context_menu': context_menu,
         'info': {
             'mediatype': 'video',
             'title': item['live_room']['title'],
@@ -1238,13 +1244,16 @@ def live_area(pid, id, page):
         if item['verify']['desc']:
             plot += tag(item['verify']['desc'], 'orange') + '\n\n'
         plot += item['title']
-
+        context_menu = [
+            (f"转到UP: {item['uname']}", f"Container.Update({plugin.url_for('user', id=item['uid'])})")
+        ]
         live = {
             'label': item['uname'] + ' - ' + item['title'],
             'path': plugin.url_for('live', id=item['roomid']),
             'is_playable': True,
             'icon': item['cover'],
             'thumbnail': item['cover'],
+            'context_menu': context_menu,
             'info': {
                 'mediatype': 'video',
                 'title': item['title'],
@@ -1319,12 +1328,16 @@ def web_dynamic(page, offset):
                 label = tag('【未直播】', 'grey') + author + ' - ' + item['live_play_info']['title']
             plot = f"UP: {author}\tID: {mid}\n房间号: {item['live_play_info']['room_id']}\n{item['live_play_info']['watched_show']['text_large']}\n"
             plot += f"分区: {tag(item['live_play_info']['parent_area_name'], 'blue')} {tag(item['live_play_info']['area_name'], 'blue')}"
+            context_menu = [
+                (f"转到UP: {author}", f"Container.Update({plugin.url_for('user', id=mid)})")
+            ]
             video = {
                 'label': label,
                 'path': plugin.url_for('live', id=item["live_play_info"]["room_id"]),
                 'is_playable': True,
                 'icon': item["live_play_info"]["cover"],
                 'thumbnail': item["live_play_info"]["cover"],
+                'context_menu': context_menu,
                 'info': {
                     'mediatype': 'video',
                     'title': item['live_play_info']['title'],
@@ -1476,12 +1489,16 @@ def home(page):
             else:
                 label = tag('【未直播】', 'grey') + item['owner']['name'] + ' - ' + item['title']
             plot = f"UP: {item['owner']['name']}\tID: {item['owner']['mid']}\n房间号: {item['room_info']['room_id']}\n{item['watched_show']['text_large']}\n分区: {item['area']['area_name']}"
+            context_menu = [
+                (f"转到UP: {item['owner']['name']}", f"Container.Update({plugin.url_for('user', id=item['owner']['mid'])})")
+            ]
             video = {
                 'label': label,
                 'path': plugin.url_for('live', id=item['url'].split('/')[-1]),
                 'is_playable': True,
                 'icon': item['pic'],
                 'thumbnail': item['pic'],
+                'context_menu': context_menu,
                 'info': {
                     'plot': plot
                 }
@@ -1608,12 +1625,16 @@ def followingLive(page):
         else:
             label = tag('【未开播】 ', 'grey')
         label += live['uname'] + ' - ' +  live['title']
+        context_menu = [
+            (f"转到UP: {live['uname']}", f"Container.Update({plugin.url_for('user', id=live['uid'])})")
+        ]
         item = {
             'label': label,
-            'path': plugin.url_for('live', id=live['roomid']),
+            'path': plugin.url_for('live', id=live['uid']),
             'is_playable': True,
             'icon': live['face'],
             'thumbnail': live['face'],
+            'context_menu': context_menu,
             'info': {
                 'mediatype': 'video',
                 'title': live['title'],
@@ -1655,12 +1676,16 @@ def history(time):
                 else:
                     label = tag('【未开播】 ', 'grey')
                 label += item['author_name'] + ' - ' +  item['title']
+                context_menu = [
+                    (f"转到UP: {item['author_name']}", f"Container.Update({plugin.url_for('user', id=item['author_mid'])})")
+                ]
                 video = {
                     'label': label,
                     'path': plugin.url_for('live', id=item['kid']),
                     'is_playable': True,
                     'icon': item['cover'],
                     'thumbnail': item['cover'],
+                    'context_menu': context_menu,
                     'info': {
                         'mediatype': 'video',
                         'title': item['title'],
