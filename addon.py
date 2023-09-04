@@ -84,14 +84,24 @@ def get_video_item(item):
     else:
         multi_key = ''
 
+    uname = ''
+    mid = 0
     if 'upper' in item:
         uname = item['upper']['name']
+        mid = item['upper']['mid']
     elif 'owner' in item:
         uname = item['owner']['name']
+        mid = item['owner']['mid']
     elif 'author' in item:
         uname = item['author']
-    else:
-        uname = ''
+    elif 'author_name' in item:
+        uname = item['author_name']
+
+    if not mid:
+        if 'mid' in item:
+            mid = item['mid']
+        elif 'author_mid' in item:
+            mid = item['author_mid']
 
     if 'pic' in item:
         pic = item['pic']
@@ -115,6 +125,8 @@ def get_video_item(item):
         cid = item['cid']
     elif 'ugc' in item and 'first_cid' in item['ugc']:
         cid = item['ugc']['first_cid']
+    elif 'history' in item and 'cid' in item['history']:
+        cid = item['history']['cid']
     else:
         cid = 0
 
@@ -138,13 +150,17 @@ def get_video_item(item):
         label = f"{uname} - {title}"
     else:
         label = title
+    context_menu = []
+    if uname and mid:
+        context_menu.append((f"转到UP: {uname}", f"Container.Update({plugin.url_for('user', id=mid)})"))
     if (not multi_key) or item[multi_key] == 1:
         video = {
             'label': label,
-            'path': plugin.url_for('video', id=item['bvid'], cid=cid, ispgc='false'),
+            'path': plugin.url_for('video', id=bvid, cid=cid, ispgc='false'),
             'is_playable': True,
             'icon': pic,
             'thumbnail': pic,
+            'context_menu': context_menu,
             'info': {
                 'mediatype': 'video',
                 'title': title,
@@ -159,6 +175,7 @@ def get_video_item(item):
             'path': plugin.url_for('videopages', id=bvid),
             'icon': pic,
             'thumbnail': pic,
+            'context_menu': context_menu,
             'info': {
                 'plot': plot
             }
@@ -1089,21 +1106,8 @@ def get_search_list(list):
     videos = []
     for item in list:
         if item['type'] == 'video':
-            plot = parse_plot(item)
-            video = {
-                'label': f"{item['author']} - {clear_text(item['title'])}",
-                'path': plugin.url_for('video', id=item['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['pic'],
-                'thumbnail': item['pic'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': clear_text(item['title']),
-                    'duration': parse_duration(item['duration']),
-                    'plot': plot
-                },
-                'info_type': 'video',
-            }
+            item['title'] = clear_text(item['title'])
+            video = get_video_item(item)
         elif item['type'] == 'media_bangumi' or item['type'] == 'media_ft':
             if item['type'] == 'media_bangumi':
                 cv_type = '声优'
@@ -1640,31 +1644,10 @@ def history(time):
         return videos
     list = res['data']['list']
     for item in list:
-        if item['videos'] == 1:
-            video = {
-                'label': item['author_name'] + ' - ' +  item['title'],
-                'path': plugin.url_for('video', id=item['history']['bvid'], cid=0, ispgc='false'),
-                'is_playable': True,
-                'icon': item['cover'],
-                'thumbnail': item['cover'],
-                'info': {
-                    'mediatype': 'video',
-                    'title': item['title'],
-                    'duration': item['duration']
-                },
-                'info_type': 'video'
-            }
-        elif item['videos'] > 1:
-            label = parts_tag(item['videos']) + item['author_name'] + ' - ' +  item['title']
-            if 'show_title' in item and item['show_title']:
-                label += '\n' + tag(item['show_title'], 'grey')
-            video = {
-                'label': label,
-                'path': plugin.url_for('videopages', id=item['history']['bvid'], cid=item['history']['cid']),
-                'icon': item['cover'],
-                'thumbnail': item['cover'],
-                'info_type': 'video'
-            }
+        if item['videos'] >=1:
+            video = get_video_item(item)
+            if not video:
+                continue
         else:
             if item['history']['business'] == 'live':
                 if item['live_status'] == 1:
