@@ -155,6 +155,7 @@ def get_video_item(item):
     context_menu = []
     if uname and mid:
         context_menu.append((f"转到UP: {uname}", f"Container.Update({plugin.url_for('user', id=mid)})"))
+    context_menu.append(("查看推荐视频", f"Container.Update({plugin.url_for('related_videos', id=bvid)})"))
     if (not multi_key) or item[multi_key] == 1:
         video = {
             'label': label,
@@ -1591,6 +1592,22 @@ def ranking(id):
         if item:
             videos.append(video)
     return videos
+
+
+@plugin.route('/related_videos/<id>/')
+def related_videos(id):
+    videos = []
+    res = get_api_data('/x/web-interface/archive/related', {'bvid': id})
+    if res['code'] != 0:
+        notify_error(res)
+        return videos
+    list = res['data']
+    for item in list:
+        video = get_video_item(item)
+        if video:
+            videos.append(video)
+    return videos
+
 
 @plugin.route('/watchlater/<page>/')
 def watchlater(page):
