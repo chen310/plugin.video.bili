@@ -4,7 +4,6 @@
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.xbmcswift2" version="2.4.0"/>
     <import addon="script.module.requests" version="2.12.4"/>
-    <import addon="inputstream.adaptive" version="20.3.1"/>
     <import addon="script.module.qrcode" version="5.3"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="addon.py">

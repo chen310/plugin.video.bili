@@ -282,3 +282,11 @@ msgstr ""
 msgctxt "#30130"
 msgid "Danmaku Display Area"
 msgstr ""
+
+msgctxt "#30131"
+msgid "Install the inputstream.adaptive plugin"
+msgstr ""
+
+msgctxt "#30132"
+msgid "This feature requires the inputstream.adaptive plugin. When disabled, the maximum video resolution is limited to 720P."
+msgstr ""

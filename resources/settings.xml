@@ -100,10 +100,25 @@
 				</setting>
 			</group>
 			<group id="3" label="30010">
-				<setting id="enable_dash" type="boolean" label="30011" help="">
+				<setting id="enable_dash" type="boolean" label="30011" help="30132">
 					<level>0</level>
 					<default>true</default>
 					<control type="toggle"/>
+				</setting>
+				<setting id="install_inputstream_adaptive" type="string" label="30131" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action">
+						<data>InstallAddon(inputstream.adaptive)</data>
+					</control>
+					<dependencies>
+                        <dependency type="enable">
+                            <condition name="InfoBool" on="property">!System.HasAddon(inputstream.adaptive)</condition>
+                        </dependency>
+                    </dependencies>
 				</setting>
 				<setting id="server_port" type="integer" label="30012" help="">
 					<level>0</level>

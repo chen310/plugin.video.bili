@@ -716,6 +716,14 @@ def index():
                 'path': category['path'],
                 'context_menu': context_menu,
             })
+    if getSetting('enable_dash') == 'true' and not xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):
+        result = xbmcgui.Dialog().yesno('安装插件', '使用 dash 功能需要安装 inputstream.adaptive 插件，是否安装？', '取消', '确认')
+        if result:
+            xbmc.executebuiltin('InstallAddon(inputstream.adaptive)')
+        else:
+            result = xbmcgui.Dialog().yesno('取消安装', '不使用 dash 请到设置中关闭', '取消', '确认')
+            if result:
+                plugin.open_settings()
     return items
 
 

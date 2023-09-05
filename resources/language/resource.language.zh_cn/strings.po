@@ -282,3 +282,11 @@ msgstr "我的"
 msgctxt "#30130"
 msgid "Danmaku Display Area"
 msgstr "弹幕显示区域"
+
+msgctxt "#30131"
+msgid "Install the inputstream.adaptive plugin"
+msgstr "安装 inputstream.adaptive 插件"
+
+msgctxt "#30132"
+msgid "This feature requires the inputstream.adaptive plugin. When disabled, the maximum video resolution is limited to 720P."
+msgstr "此功能需要安装 inputstream.adaptive 插件。禁用后，视频最高分辨率将限制为 720P"
