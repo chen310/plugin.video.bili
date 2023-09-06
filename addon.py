@@ -157,9 +157,10 @@ def get_video_item(item):
         context_menu.append((f"转到UP: {uname}", f"Container.Update({plugin.url_for('user', id=mid)})"))
     context_menu.append(("查看推荐视频", f"Container.Update({plugin.url_for('related_videos', id=bvid)})"))
     if (not multi_key) or item[multi_key] == 1:
+        context_menu.append(("仅播放音频", f"PlayMedia({plugin.url_for('video', id=bvid, cid=cid, ispgc='false', audio_only='true', title=title)})"))
         video = {
             'label': label,
-            'path': plugin.url_for('video', id=bvid, cid=cid, ispgc='false'),
+            'path': plugin.url_for('video', id=bvid, cid=cid, ispgc='false', audio_only='false', title=title),
             'is_playable': True,
             'icon': pic,
             'thumbnail': pic,
@@ -1837,12 +1838,15 @@ def bangumi(type, id):
             label = tag('【' + episode['badge'] + '】', 'pink') + episode['share_copy']
         else:
             label = episode['share_copy']
+        context_menu = []
+        context_menu.append(("仅播放音频", f"PlayMedia({plugin.url_for('video', id=episode['bvid'], cid=episode['cid'], ispgc='true', audio_only='true', title=episode['share_copy'])})"))
         item = {
             'label': label,
-            'path': plugin.url_for('video', id=episode['bvid'], cid=episode['cid'], ispgc='true'),
+            'path': plugin.url_for('video', id=episode['bvid'], cid=episode['cid'], ispgc='true', audio_only='false', title=episode['share_copy']),
             'is_playable': True,
             'icon': episode['cover'],
             'thumbnail': episode['cover'],
+            'context_menu': context_menu,
             'info': {
                 'mediatype': 'video',
                 'title': episode['share_copy'],
@@ -1867,12 +1871,15 @@ def videopages(id):
             pic = item['first_frame']
         else:
             pic = data['pic']
+        context_menu = []
+        context_menu.append(("仅播放音频", f"PlayMedia({plugin.url_for('video', id=data['bvid'], cid=item['cid'], ispgc='false', audio_only='true', title=item['part'])})"))
         video = {
             'label': item['part'],
-            'path': plugin.url_for('video', id=data['bvid'], cid=item['cid'], ispgc='false'),
+            'path': plugin.url_for('video', id=data['bvid'], cid=item['cid'], ispgc='false', audio_only='false', title=item['part']),
             'is_playable': True,
             'icon': pic,
             'thumbnail': pic,
+            'context_menu': context_menu,
             'info': {
                 'mediatype': 'video',
                 'title': item['part'],
@@ -1894,9 +1901,10 @@ def report_history(bvid, cid):
     return res
 
 
-@plugin.route('/video/<id>/<cid>/<ispgc>/')
-def video(id, cid, ispgc):
+@plugin.route('/video/<id>/<cid>/<ispgc>/<audio_only>/<title>/')
+def video(id, cid, ispgc, audio_only, title):
     ispgc = ispgc == 'true'
+    audio_only = audio_only == 'true'
     video_url = ''
     enable_dash = getSetting('enable_dash') == 'true'
     if cid == '0':
@@ -1919,7 +1927,7 @@ def video(id, cid, ispgc):
 
     qn = getSetting('video_resolution')
 
-    if enable_dash:
+    if enable_dash or audio_only:
         params = {
             'bvid': id,
             'cid': cid,
@@ -1946,27 +1954,36 @@ def video(id, cid, ispgc):
         data = res['data']
 
     if 'dash' in data:
-        mpd = generate_mpd(data['dash'])
-        success = None
-        basepath = 'special://temp/plugin.video.bili/'
-        if not make_dirs(basepath):
-            return
-        filepath = '{}{}.mpd'.format(basepath, cid)
-        with xbmcvfs.File(filepath, 'w') as mpd_file:
-            success = mpd_file.write(mpd)
-        if not success:
-            return
-        ip_address = '127.0.0.1'
-        port = getSetting('server_port')
-        video_url = {
-            'path': 'http://{}:{}/{}.mpd'.format(ip_address, port, cid),
-            'properties': {
-                'inputstream': 'inputstream.adaptive',
-                'inputstream.adaptive.manifest_type': 'mpd',
-                'inputstream.adaptive.manifest_headers': 'Referer=https://www.bilibili.com',
-                'inputstream.adaptive.stream_headers': 'Referer=https://www.bilibili.com'
+        if audio_only:
+            video_url = data['dash']['audio'][0]['baseUrl'] + '|Referer=https://www.bilibili.com'
+            video_url = {
+                'label': title,
+                'path': video_url
             }
-        }
+            plugin.set_resolved_url(video_url)
+            return
+        else:
+            mpd = generate_mpd(data['dash'])
+            success = None
+            basepath = 'special://temp/plugin.video.bili/'
+            if not make_dirs(basepath):
+                return
+            filepath = '{}{}.mpd'.format(basepath, cid)
+            with xbmcvfs.File(filepath, 'w') as mpd_file:
+                success = mpd_file.write(mpd)
+            if not success:
+                return
+            ip_address = '127.0.0.1'
+            port = getSetting('server_port')
+            video_url = {
+                'path': 'http://{}:{}/{}.mpd'.format(ip_address, port, cid),
+                'properties': {
+                    'inputstream': 'inputstream.adaptive',
+                    'inputstream.adaptive.manifest_type': 'mpd',
+                    'inputstream.adaptive.manifest_headers': 'Referer=https://www.bilibili.com',
+                    'inputstream.adaptive.stream_headers': 'Referer=https://www.bilibili.com'
+                }
+            }
     elif 'durl' in data:
         video_url = data['durl'][0]['url']
         if video_url:
