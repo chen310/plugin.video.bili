@@ -1094,32 +1094,68 @@ def his_subscription(id):
 
 @plugin.route('/search_list/')
 def search_list():
-    return [
-        {
-            'label': '综合搜索',
-            'path': plugin.url_for('search', type='all', page=1)
-        },
-        {
-            'label': '视频搜索',
-            'path': plugin.url_for('search', type='video', page=1)
-        },
-        {
-            'label': '番剧搜索',
-            'path': plugin.url_for('search', type='media_bangumi', page=1)
-        },
-        {
-            'label': '影视搜索',
-            'path': plugin.url_for('search', type='media_ft', page=1)
-        },
-        {
-            'label': '直播搜索',
-            'path': plugin.url_for('search', type='live', page=1)
-        },
-        {
-            'label': '用户搜索',
-            'path': plugin.url_for('search', type='bili_user', page=1)
-        },
-    ]
+    kv = {
+        'all': '综合搜索',
+        'video': '视频搜索',
+        'media_bangumi': '番剧搜索',
+        'media_ft': '影视搜索',
+        'live': '直播搜索',
+        'bili_user': '用户搜索',
+    }
+    items = []
+    for key in kv:
+        items.append({
+            'label': kv[key],
+            'path': plugin.url_for('search', type=key, page=1)
+        })
+    items.append({
+        'label': '清除搜索历史',
+        'path': plugin.url_for('clear_search_history')
+    })
+    data = plugin.get_storage('data')
+    search_history = data.get('search_history', [])
+    for item in search_history:
+        context_menu = [
+            ('删除该搜索历史', f"RunPlugin({plugin.url_for('delete_keyword', type=item['type'], keyword=item['keyword'])})"),
+        ]
+        items.append({
+            'label': f"[B]{tag(item['keyword'], 'pink')}[/B]{tag('(' + kv[item['type']] + ')', 'grey')}",
+            'path': plugin.url_for('search_by_keyword', type=item['type'], keyword=item['keyword'], page=1),
+            'context_menu': context_menu,
+        })
+    return items
+
+
+@plugin.route('/delete_keyword/<type>/<keyword>/')
+def delete_keyword(type, keyword):
+    data = plugin.get_storage('data')
+    search_history = data['search_history']
+    for item in search_history:
+        if item['keyword'] == keyword and item['type'] == type:
+            search_history.remove(item)
+            xbmc.executebuiltin('Container.Refresh')
+            return
+
+
+def add_keyword(type, keyword):
+    data = plugin.get_storage('data')
+    if 'search_history' not in data:
+        data['search_history'] = []
+    search_history = data['search_history']
+    for item in search_history:
+        if item["type"] == type and item["keyword"] == keyword:
+            search_history.remove(item)
+            search_history.insert(0, item)
+            return
+    search_history.insert(0, {"type": type, "keyword": keyword})
+
+
+@plugin.route('/clear_search_history/')
+def clear_search_history():
+    data = plugin.get_storage('data')
+    if 'search_history' in data:
+        data['search_history'] = []
+        xbmc.executebuiltin('Container.Refresh')
 
 
 def get_search_list(list):
@@ -1180,6 +1216,7 @@ def search(type, page):
 
     if not keyword.strip():
         return videos
+    add_keyword(type, keyword)
     return search_by_keyword(type, keyword, page)
 
 
