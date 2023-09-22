@@ -12,7 +12,6 @@ from datetime import datetime
 from xbmcswift2 import Plugin, xbmc, xbmcplugin, xbmcvfs, xbmcgui, xbmcaddon
 from danmaku2ass import Danmaku2ASS
 
-locale.setlocale(locale.LC_ALL, 'zh_CN.utf-8')
 
 try:
     xbmc.translatePath = xbmcvfs.translatePath
@@ -45,7 +44,7 @@ def convert_number(num):
 
 def timestamp_to_date(timestamp):
     dt = datetime.fromtimestamp(timestamp)
-    return dt.strftime('%Y年%m月%d日 %H:%M:%S')
+    return dt.strftime('%Y.%m.%d %H:%M:%S')
 
 
 def notify(title, msg, t=1500):
