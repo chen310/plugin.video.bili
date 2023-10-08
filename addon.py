@@ -1752,7 +1752,7 @@ def followingLive(page):
         ]
         item = {
             'label': label,
-            'path': plugin.url_for('live', id=live['uid']),
+            'path': plugin.url_for('live', id=live['roomid']),
             'is_playable': True,
             'icon': live['face'],
             'thumbnail': live['face'],
@@ -1843,10 +1843,12 @@ def live(id):
     res = fetch_url('https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id={}&protocol=0,1&format=0,1,2&codec=0,1&qn={}&platform=web&ptype=8&dolby=5&panorama=1'.format(id, qn))
     if res['code'] != 0:
         notify_error(res)
+        xbmc.log('live_stream: ' + str(id) + ' ' + str(res))
         return
     if not res['data']['playurl_info']:
         return
     streams = res['data']['playurl_info']['playurl']['stream']
+    xbmc.log('live_stream: ' + str(streams))
     live_url = choose_live_resolution(streams) + '|Referer=https://www.bilibili.com'
     plugin.set_resolved_url(live_url)
 
