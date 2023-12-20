@@ -418,7 +418,10 @@ def qrcode_login():
         notify('提示', '无法创建文件夹')
         return
     try:
-        res = requests.get('https://passport.bilibili.com/x/passport-login/web/qrcode/generate').json()
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
+        }
+        res = requests.get('https://passport.bilibili.com/x/passport-login/web/qrcode/generate', headers=headers).json()
     except:
         notify('提示', '二维码获取失败')
         return
@@ -443,9 +446,12 @@ def qrcode_login():
 
 def polling_login_status(key):
     session = requests.Session()
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
+    }
     for i in range(50):
         try:
-            response = session.get(f'https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key={key}')
+            response = session.get(f'https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key={key}', headers=headers)
             check_result = response.json()
         except:
             time.sleep(3)
