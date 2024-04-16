@@ -689,7 +689,7 @@ def encWbi(params: dict, img_key: str, sub_key: str):
     return params
 
 
-def getWbiKeys() -> tuple[str, str]:
+def getWbiKeys():
     '获取最新的 img_key 和 sub_key'
     json_content = get_api_data('/x/web-interface/nav')
     img_url: str = json_content['data']['wbi_img']['img_url']
